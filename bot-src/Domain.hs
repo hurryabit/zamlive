@@ -8,7 +8,7 @@ module Domain (
     Subscriber(..),
     Token(..),
     Expense(..),
-    Approval(..),
+    ExpenseApproval(..),
     ) where
 
 import DA.Ledger.IsLedgerValue (IsLedgerValue(..))
@@ -64,24 +64,27 @@ instance IsLedgerValue Token where
 data Expense = Expense
     { payer :: Party
     , beneficiaries :: [Party]
+    , amount :: Value
+    , account :: Value
     }
     deriving (Eq, Show)
 
 instance IsLedgerValue Expense where
-    toValue Expense{payer, beneficiaries} = VList [toValue payer, toValue beneficiaries]
+    toValue Expense{payer, beneficiaries, amount, account} = 
+      VList [toValue payer, toValue beneficiaries, amount, account]
     fromValue = \case
-        VList [v1, v2] -> Expense <$> fromValue v1 <*> fromValue v2
+        VList [v1, v2, v3, v4] -> Expense <$> fromValue v1 <*> fromValue v2 <*> Just v3 <*> Just v4
         _ -> Nothing
 
-data Approval = Approval
+data ExpenseApproval = ExpenseApproval
     { payer :: Party
     , beneficiary :: Party
     , expense :: ContractId
     }
     deriving (Eq, Show)
 
-instance IsLedgerValue Approval where
-    toValue Approval{payer, beneficiary, expense} = VList [toValue payer, toValue beneficiary, toValue expense]
+instance IsLedgerValue ExpenseApproval where
+    toValue ExpenseApproval{payer, beneficiary, expense} = VList [toValue payer, toValue beneficiary, toValue expense]
     fromValue = \case
-        VList [v1, v2, v3] -> Approval <$> fromValue v1 <*> fromValue v2 <*> fromValue v3
+        VList [v1, v2, v3] -> ExpenseApproval <$> fromValue v1 <*> fromValue v2 <*> fromValue v3
         _ -> Nothing

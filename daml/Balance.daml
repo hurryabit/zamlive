@@ -1,0 +1,84 @@
+-- Copyright (c) 2019 The DAML Authors. All rights reserved.
+-- SPDX-License-Identifier: Apache-2.0
+
+daml 1.2
+module Balance (
+  Balance,
+  members,
+  init,
+  fromList,
+  sum,
+  add,
+  add1,
+  expenseToBalance
+)where
+
+import Prelude hiding (floor, sum)
+import DA.Next.Map qualified as Map
+
+type Balance = Map.Map Party Decimal
+
+floor : Decimal -> Decimal 
+floor x = 
+  let 
+    rounded = roundBankers 2 x 
+  in 
+    if (rounded > x) then 
+      rounded - 0.01
+    else 
+      rounded   
+      
+getOrElse : a -> Optional a -> a
+getOrElse _ (Some x) = x
+getOrElse x _ = x
+
+empty: Balance 
+empty = Map.empty
+
+members : Balance -> [Party]
+members x = map fst $ Map.toList x
+
+initEvenly : Decimal -> [Party] -> Balance 
+initEvenly amount members = Map.fromList [(member, amount) | member <- members]
+  
+init: [Party] -> Balance
+init members = initEvenly 0.0 members
+
+share : Decimal -> [Party] -> Balance
+share amount members = 
+  let 
+    n = intToDecimal $ length members
+    aShare = floor $ amount / n
+  in
+    initEvenly aShare members
+
+add1 : Balance -> (Party, Decimal) -> Balance 
+add1 balance (member, amount) = 
+  Map.insert member (amount  + (getOrElse 0.0 (Map.lookup member balance))) balance
+
+add : Balance -> Balance -> Balance 
+add b1 b2 = 
+  foldl add1 b1 (Map.toList b2)
+
+fromList list = 
+  foldl add1 empty list
+
+sum : Balance -> Decimal 
+sum b = 
+  foldl (\a t -> a + (snd t)) 0.0 (Map.toList b) 
+
+expenseToBalance amount payer members =
+  let 
+    b1 = share (-amount) members
+    r = amount + (sum b1)
+  in  
+    add1 b1 (payer, amount - r)
+
+testBalanceArithmetics = 
+  scenario do 
+    alice <- getParty "Alice"
+    bob <- getParty "Bob"
+    carol <- getParty "Carol"
+    members <- pure [alice, bob, carol]
+    b1 <- pure $ expenseToBalance 1.00 alice members
+    assert $ b1 == fromList [(alice, 0.68), (bob, -0.34), (carol, -0.34)]

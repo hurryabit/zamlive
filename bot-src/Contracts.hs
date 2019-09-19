@@ -50,4 +50,4 @@ extractCreateEvent = \case
         Nothing
 
 getTid :: PackageId -> Text -> TemplateId
-getTid pid s = TemplateId (Identifier pid (ModuleName "Simplified") (EntityName s))
+getTid pid s = TemplateId (Identifier pid (ModuleName "Main") (EntityName s))

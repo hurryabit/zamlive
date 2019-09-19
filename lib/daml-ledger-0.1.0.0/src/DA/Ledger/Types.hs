@@ -97,6 +97,13 @@ data Command
       , choice     :: Choice
       , choiceArg  :: Value
       }
+    | ExerciseByKeyCommand 
+      { tid        :: TemplateId
+      , key        :: Value
+      , choice     :: Choice
+      , arg        :: Value
+      }
+       
     deriving (Eq,Ord,Show)
 
 -- ledger_offset.proto
