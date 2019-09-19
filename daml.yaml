@@ -6,6 +6,7 @@ parties:
   - Martin
   - Oliver
   - Remy
+  - Jussi
 version: 0.0.1
 dependencies:
   - daml-prim
