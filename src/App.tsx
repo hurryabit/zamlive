@@ -1,5 +1,5 @@
 import React from 'react';
-import AccountsView from './AccountsView';
+import AccountsList from './AccountsList';
 import './App.css';
 
 class App extends React.Component {
@@ -8,7 +8,7 @@ class App extends React.Component {
       <div>
         <h1>ZAMLive</h1>
         <hr />
-        <AccountsView />
+        <AccountsList payer='Martin'/>
       </div>
     );
   }
