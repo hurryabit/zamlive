@@ -8,8 +8,6 @@ import DA.List
 
 data AcceptResponse = AccountCreation (ContractId Account) | NewAccountProposal (ContractId AccountProposal)
 
-
-
 addExpense balances payer amount =
   balances
 
@@ -123,16 +121,6 @@ template Account
     key ((membersB balance), name) : AccountKey
     maintainer key._1
 
-    choice AddUnsignedExpense : ContractId Account
-      with
-        payer: Party
-        amount: Decimal
-      controller payer
-      do
-        create Account with
-          balance = add balance $ createExpense amount payer members
-          name = name
-
     nonconsuming choice SubmitExpense : ContractId Expense
       with
         payer: Party
@@ -141,7 +129,8 @@ template Account
       do
         create Expense with
           submitter = payer
-          balance = createExpense amount payer members
+          members = members
+          amount = amount
           account = (members, name)
 
     choice SettleExpense : ContractId Account
@@ -152,7 +141,7 @@ template Account
       controller submitter
       do
         expense <- fetch expenseId
-        expenseMembers <- pure $ membersB (expense.balance)
+        expenseMembers <- pure expense.members
         assert $ expense.submitter == submitter
         signatures <- (mapA fetch signatureIds)
         signers <- pure $ submitter :: (map (\x -> x.signer) signatures)
@@ -162,15 +151,15 @@ template Account
         _ <- archive expenseId
         _ <- mapA archive signatureIds
         create this with
-           balance = add balance expense.balance
+           balance = add balance (createExpense expense.amount submitter members)
 
 template Expense
   with
     submitter: Party
-    balance: Balance
+    members: [Party]
+    amount: Decimal
     account: AccountKey
   where
-    let members = membersB balance
     signatory submitter
     observer members
 
@@ -182,16 +171,20 @@ template Expense
         create ExpenseSignature with
           signer = signer
           expense = self
+          expenseSubmitter = submitter
 
 template ExpenseSignature
   with
     signer: Party
     expense: ContractId Expense
+    expenseSubmitter: Party
 
   where
     signatory signer
+    observer expenseSubmitter
 
 basicAccountWithExpenses = scenario do
+
   andreas <- getParty "Andreas"
   bernhard <- getParty "Bernhard"
   cerolf <- getParty "Cerolf"
@@ -225,9 +218,9 @@ basicAccountWithExpenses = scenario do
   --   NewAccountProposal _ -> error "Everybody has accepted so should have account"
   --   AccountCreation cid -> pure cid
 
-  _ <- submit cerolf do exerciseByKey @Account accountKey (AddUnsignedExpense cerolf 100.0)
+  _ <- submit cerolf do exerciseByKey @Account accountKey (SubmitExpense cerolf 100.0)
 
-  _ <- submit bernhard do exerciseByKey @Account accountKey (AddUnsignedExpense bernhard 70.0)
+  _ <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense bernhard 70.0)
 
   pure account
 
@@ -261,11 +254,14 @@ expenseSigning = scenario do
 
   accountKey <- pure ([andreas, bernhard, cerolf], accountName)
 
-  expense <- submit andreas do exerciseByKey @Account accountKey (SubmitExpense andreas 100.0)
+  expenseCableTVBill <- submit andreas do exerciseByKey @Account accountKey (SubmitExpense andreas 100.0)
+  cerolfSignature <- submit cerolf do exercise expenseCableTVBill $ Sign cerolf
+  bernhardSignature <- submit bernhard do exercise expenseCableTVBill $ Sign bernhard
+  _ <- submit andreas do exerciseByKey @Account accountKey (SettleExpense andreas expenseCableTVBill [bernhardSignature, cerolfSignature])
 
-  cerolfSignature <- submit cerolf do exercise expense $ Sign cerolf
-  bernhardSignature <- submit bernhard do exercise expense $ Sign bernhard
-
-  _ <- submit andreas do exerciseByKey @Account accountKey (SettleExpense andreas expense [bernhardSignature, cerolfSignature])
+  expensePetShampooingFund <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense bernhard 70.0)
+  cerolfSignature <- submit cerolf do exercise expensePetShampooingFund $ Sign cerolf
+  andreasSignature <- submit andreas do exercise expensePetShampooingFund $ Sign andreas
+  _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
 
   pure account
