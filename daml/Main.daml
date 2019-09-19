@@ -3,37 +3,265 @@
 
 daml 1.2
 module Main where
+import DA.Next.Map qualified as Map
+import DA.List
 
-type AssetId = ContractId Asset
+data AcceptResponse = AccountCreation (ContractId Account) | NewAccountProposal (ContractId AccountProposal)
 
-template Asset
+addExpense balances payer amount =
+  balances
+
+type Balance = Map.Map Party Decimal
+
+isSubset s1 s2 = all (\x -> elem x s2) s1
+
+floorB : Decimal -> Decimal 
+floorB x = 
+  let 
+    rounded = roundBankers 2 x 
+  in 
+    if (rounded > x) then 
+      rounded - 0.01
+    else 
+      rounded   
+      
+membersB : Balance -> [Party]
+membersB x = map fst $ Map.toList x
+
+initEvenly : Decimal -> [Party] -> Balance 
+initEvenly amount members = Map.fromList [(member, amount) | member <- members]
+  
+share : Decimal -> [Party] -> Balance
+share amount members = 
+  let 
+    n = intToDecimal $ length members
+    aShare = floorB $ amount / n
+  in
+    initEvenly aShare members
+
+add : Balance -> Balance -> Balance 
+add b1 b2 = 
+  Map.merge 
+    (\k a -> Some a)  
+    (\k a -> Some a)  
+    (\k a1 a2  -> Some (a1  + a2))
+    b1 
+    b2    
+
+sumB : Balance -> Decimal 
+sumB b = 
+  foldl (\a t -> a + (snd t)) 0.0 (Map.toList b) 
+
+createExpense amount payer members =
+  let 
+    b1 = share (-amount) members
+    r = amount + (sumB b1)
+  in  
+    add b1 (Map.fromList [(payer, amount - r)])
+
+testBalanceArithmetics = 
+  scenario do 
+    alice <- getParty "Alice"
+    bob <- getParty "Bob"
+    carol <- getParty "Carol"
+    members <- pure [alice, bob, carol]
+    b1 <- pure (createExpense 1.00 alice members)  
+    assert $ b1 == Map.fromList [(alice, 0.68), (bob, -0.34), (carol, -0.34)]
+
+type AccountKey = ([Party], Text)
+
+template AccountProposal
   with
-    issuer : Party
-    owner  : Party
-    name   : Text
+    pendingMembers: [Party]
+    members: [Party]
+    name: Text
+
   where
-    ensure name /= ""
-    signatory issuer
-    controller owner can
-      Give : AssetId
-        with
-          newOwner : Party
-        do
-          create this with
-            owner = newOwner
+    signatory members
+    observer pendingMembers
 
-setup = scenario do
-  alice <- getParty "Alice"
-  bob <- getParty "Bob"
+    ensure
+      and [
+        all (\x -> notElem x pendingMembers) members,
+        not $ null pendingMembers
+      ]
 
-  aliceTV <- submit alice do
-    create Asset with
-      issuer = alice
-      owner = alice
-      name = "TV"
+    choice Accept : AcceptResponse
+      with
+        acceptingMember: Party
+      controller acceptingMember
+      do
+        assert $ elem acceptingMember pendingMembers
+        let remainingPendingMembers = delete acceptingMember pendingMembers
+        let newMembers = acceptingMember :: members
 
-  bobTV <- submit alice do
-    exercise aliceTV Give with newOwner = bob
+        if null remainingPendingMembers then
+          do
+            cid <- create Account with
+              balance = initEvenly 0.0 newMembers
+              name = name
+            pure $ AccountCreation cid
+        else
+          do
+            cid <- create this with
+              pendingMembers = remainingPendingMembers
+              members = newMembers
+            pure $ NewAccountProposal cid
 
-  submit bob do
-    exercise bobTV Give with newOwner = alice
+template Account
+  with
+    balance: Balance
+    name: Text
+
+  where
+    let members = membersB balance
+    signatory members
+    ensure sumB balance == 0.0
+
+    key ((membersB balance), name) : AccountKey
+    maintainer key._1
+
+    nonconsuming choice SubmitExpense : ContractId Expense
+      with
+        payer: Party
+        amount: Decimal
+      controller payer
+      do
+        create Expense with
+          submitter = payer
+          members = members
+          amount = amount
+          account = (members, name)
+
+    choice SettleExpense : ContractId Account
+      with
+        submitter: Party
+        expenseId: ContractId Expense
+        signatureIds: [ContractId ExpenseSignature]
+      controller submitter
+      do
+        expense <- fetch expenseId
+        expenseMembers <- pure expense.members
+        assert $ expense.submitter == submitter
+        signatures <- (mapA fetch signatureIds)
+        signers <- pure $ submitter :: (map (\x -> x.signer) signatures)
+        assert $ expenseMembers `isSubset` signers
+        assert $ expenseMembers `isSubset` members
+        assert $ all (\x -> x.expense == expenseId) signatures
+        _ <- archive expenseId
+        _ <- mapA archive signatureIds
+        create this with
+           balance = add balance (createExpense expense.amount submitter members)
+
+template Expense
+  with
+    submitter: Party
+    members: [Party]
+    amount: Decimal
+    account: AccountKey
+  where
+    signatory submitter
+    observer members
+
+    nonconsuming choice Sign : ContractId ExpenseSignature
+      with
+        signer: Party
+      controller signer
+      do
+        create ExpenseSignature with
+          signer = signer
+          expense = self
+          expenseSubmitter = submitter
+
+template ExpenseSignature
+  with
+    signer: Party
+    expense: ContractId Expense
+    expenseSubmitter: Party
+
+  where
+    signatory signer
+    observer expenseSubmitter
+
+basicAccountWithExpenses = scenario do
+
+  andreas <- getParty "Andreas"
+  bernhard <- getParty "Bernhard"
+  cerolf <- getParty "Cerolf"
+
+  accountName <- pure "flat share thurgauerstrasse"
+
+  cid <- submit andreas do
+    create AccountProposal with
+      pendingMembers = [bernhard, cerolf]
+      members = [andreas]
+      name = accountName
+
+  proposalByAndreas <-
+      submit bernhard do
+        exercise cid (Accept bernhard)
+
+  proposalWithAndreasAndBernhard <- case proposalByAndreas of
+    AccountCreation _ -> error "Need Cerolf to accept"
+    NewAccountProposal cid ->
+      submit cerolf do
+        exercise cid (Accept cerolf)
+
+  account <- case proposalWithAndreasAndBernhard of
+    NewAccountProposal _ -> error "Everybody has accepted so should have account"
+    AccountCreation cid -> pure cid
+
+  accountKey <- pure ([andreas, bernhard, cerolf], accountName)
+
+  -- BUGBUG: Should make scenario fail but doesn't if Accept changed to nonconuming
+  -- duplicate_account <- case proposalWithAndreasAndBernhard of
+  --   NewAccountProposal _ -> error "Everybody has accepted so should have account"
+  --   AccountCreation cid -> pure cid
+
+  _ <- submit cerolf do exerciseByKey @Account accountKey (SubmitExpense cerolf 100.0)
+
+  _ <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense bernhard 70.0)
+
+  pure account
+
+expenseSigning = scenario do
+
+  andreas <- getParty "Andreas"
+  bernhard <- getParty "Bernhard"
+  cerolf <- getParty "Cerolf"
+
+  accountName <- pure "flat share thurgauerstrasse"
+
+  cid <- submit andreas do
+    create AccountProposal with
+      pendingMembers = [bernhard, cerolf]
+      members = [andreas]
+      name = accountName
+
+  proposalByAndreas <-
+      submit bernhard do
+        exercise cid (Accept bernhard)
+
+  proposalWithAndreasAndBernhard <- case proposalByAndreas of
+    AccountCreation _ -> error "Need Cerolf to accept"
+    NewAccountProposal cid ->
+      submit cerolf do
+        exercise cid (Accept cerolf)
+
+  account <- case proposalWithAndreasAndBernhard of
+    NewAccountProposal _ -> error "Everybody has accepted so should have account"
+    AccountCreation cid -> pure cid
+
+  accountKey <- pure ([andreas, bernhard, cerolf], accountName)
+
+  expenseCableTVBill <- submit andreas do exerciseByKey @Account accountKey (SubmitExpense andreas 100.0)
+  cerolfSignature <- submit cerolf do exercise expenseCableTVBill $ Sign cerolf
+  bernhardSignature <- submit bernhard do exercise expenseCableTVBill $ Sign bernhard
+  _ <- submit andreas do exerciseByKey @Account accountKey (SettleExpense andreas expenseCableTVBill [bernhardSignature, cerolfSignature])
+
+  expensePetShampooingFund <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense bernhard 70.0)
+  cerolfSignature <- submit cerolf do exercise expensePetShampooingFund $ Sign cerolf
+  andreasSignature <- submit andreas do exercise expensePetShampooingFund $ Sign andreas
+  _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
+
+  pure account
