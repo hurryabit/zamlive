@@ -18,11 +18,11 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   componentDidMount() {
-    const body = {"%templates": [{"moduleName": "Simplified", "entityName": "Expense"}]};
+    const body = {"%templates": [{"moduleName": "Main", "entityName": "Account"}]};
     fetch('contracts/search', {
         body: JSON.stringify(body),
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsZWRnZXJJZCI6InphbWxpdmUiLCJhcHBsaWNhdGlvbklkIjoiemFtbGl2ZSIsInBhcnR5IjoiQWxpY2UifQ.agRMcyhpDBE7rxs5dzlDQIdl6F9qBLAryt8sKvlj_ek',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsZWRnZXJJZCI6InphbWxpdmUiLCJhcHBsaWNhdGlvbklkIjoiemFtbGl2ZSIsInBhcnR5IjoiTWFydGluIn0.uYdP2MNhOcw-zYF-_tOxZygqQldhRBgX0rCTfUgZ4A4',
           'Content-type': 'application/json'
         },
         method: 'post',
