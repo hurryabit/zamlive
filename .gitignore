@@ -1,4 +1,5 @@
 .daml
 .stack-work
+node_modules
 navigator.log
 sandbox.log
