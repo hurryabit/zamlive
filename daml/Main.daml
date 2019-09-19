@@ -3,6 +3,7 @@
 
 daml 1.2
 module Main where
+
 import DA.Next.Map qualified as Map
 import DA.List
 
@@ -15,57 +16,57 @@ type Balance = Map.Map Party Decimal
 
 isSubset s1 s2 = all (\x -> elem x s2) s1
 
-floorB : Decimal -> Decimal 
-floorB x = 
-  let 
-    rounded = roundBankers 2 x 
-  in 
-    if (rounded > x) then 
+floorB : Decimal -> Decimal
+floorB x =
+  let
+    rounded = roundBankers 2 x
+  in
+    if (rounded > x) then
       rounded - 0.01
-    else 
-      rounded   
-      
+    else
+      rounded
+
 membersB : Balance -> [Party]
 membersB x = map fst $ Map.toList x
 
-initEvenly : Decimal -> [Party] -> Balance 
+initEvenly : Decimal -> [Party] -> Balance
 initEvenly amount members = Map.fromList [(member, amount) | member <- members]
-  
+
 share : Decimal -> [Party] -> Balance
-share amount members = 
-  let 
+share amount members =
+  let
     n = intToDecimal $ length members
     aShare = floorB $ amount / n
   in
     initEvenly aShare members
 
-add : Balance -> Balance -> Balance 
-add b1 b2 = 
-  Map.merge 
-    (\k a -> Some a)  
-    (\k a -> Some a)  
+add : Balance -> Balance -> Balance
+add b1 b2 =
+  Map.merge
+    (\k a -> Some a)
+    (\k a -> Some a)
     (\k a1 a2  -> Some (a1  + a2))
-    b1 
-    b2    
+    b1
+    b2
 
-sumB : Balance -> Decimal 
-sumB b = 
-  foldl (\a t -> a + (snd t)) 0.0 (Map.toList b) 
+sumB : Balance -> Decimal
+sumB b =
+  foldl (\a t -> a + (snd t)) 0.0 (Map.toList b)
 
 createExpense amount payer members =
-  let 
+  let
     b1 = share (-amount) members
     r = amount + (sumB b1)
-  in  
+  in
     add b1 (Map.fromList [(payer, amount - r)])
 
-testBalanceArithmetics = 
-  scenario do 
+testBalanceArithmetics =
+  scenario do
     alice <- getParty "Alice"
     bob <- getParty "Bob"
     carol <- getParty "Carol"
     members <- pure [alice, bob, carol]
-    b1 <- pure (createExpense 1.00 alice members)  
+    b1 <- pure (createExpense 1.00 alice members)
     assert $ b1 == Map.fromList [(alice, 0.68), (bob, -0.34), (carol, -0.34)]
 
 type AccountKey = ([Party], Text)
@@ -265,3 +266,24 @@ expenseSigning = scenario do
   _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
 
   pure account
+
+setup = scenario do
+  martin <- getParty "Martin"
+  oliver <- getParty "Oliver"
+  remy <- getParty "Remy"
+
+  let accountName = "TGS40"
+
+  propCid1 <- submit martin do
+    create AccountProposal with
+      pendingMembers = [oliver, remy]
+      members = [martin]
+      name = accountName
+
+  NewAccountProposal propCid2 <- submit oliver do
+    exercise propCid1 (Accept oliver)
+
+  AccountCreation accountCid <- submit remy do
+    exercise propCid2 (Accept remy)
+
+  pure ()
