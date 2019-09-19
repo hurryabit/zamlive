@@ -58,7 +58,7 @@ template Account
     name: Text
 
   where
-    let
+    let 
       members = Balance.members balance
       accountKey = (members, name)
     signatory members
