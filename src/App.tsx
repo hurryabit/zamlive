@@ -2,10 +2,22 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+type AppProps = {}
 
+type AppState = {
+  result: string;
+}
 
-class App extends React.Component {
-  handleClick = () => {
+class App extends React.Component<AppProps, AppState> {
+  constructor(props: AppProps) {
+    super(props);
+
+    this.state = {
+      result: ''
+    };
+  }
+
+  componentDidMount() {
     const body = {"%templates": [{"moduleName": "Simplified", "entityName": "Expense"}]};
     fetch('contracts/search', {
         body: JSON.stringify(body),
@@ -22,7 +34,7 @@ class App extends React.Component {
       return response.json()
     })
     .then(({result}) => {
-      alert('Success!\n' + JSON.stringify(result));
+      this.setState({result: JSON.stringify(result)});
     })
     .catch((error) => {
       alert('Failure!\n' + error);
@@ -31,23 +43,7 @@ class App extends React.Component {
 
   render () {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          <button onClick={this.handleClick}>Click me!</button>
-        </header>
-      </div>
+      <p>{this.state.result}</p>
     );
   }
 }
