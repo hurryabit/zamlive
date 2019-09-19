@@ -1,7 +1,7 @@
 -- Copyright (c) 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 -- SPDX-License-Identifier: Apache-2.0
 
-module DA.Ledger.App.MasterCopy.Contracts (
+module Contracts (
     MCContract(..),
     makeCreateCommand,makeArchiveCommand,extractCreateEvent,getTid
     ) where
@@ -11,8 +11,8 @@ import DA.Ledger (
     Command(..), Event(..), Transaction(..)
     )
 
-import DA.Ledger.App.MasterCopy.Domain (Master, Copy, Subscriber, Token)
-import DA.Ledger.App.MasterCopy.Logging (Logger)
+import Domain (Master, Copy, Subscriber, Token)
+import Logging (Logger)
 import DA.Ledger.IsLedgerValue (toRecord,fromRecord)
 import DA.Ledger.Types
 import Data.Text.Internal.Lazy(Text)

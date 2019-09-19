@@ -1,4 +1,4 @@
-module DA.Ledger.App.MasterCopy.RuleBot
+module RuleBot
     ( StateUpdate
     , Rule
     , Recovery
@@ -12,8 +12,8 @@ module DA.Ledger.App.MasterCopy.RuleBot
     ) where
 
 import DA.Ledger as Ledger
-import DA.Ledger.App.MasterCopy.Bot
-import DA.Ledger.App.MasterCopy.Logging
+import Bot
+import Logging
 import Data.Maybe
 import qualified Data.Map as Map
 import qualified Data.Set as Set
