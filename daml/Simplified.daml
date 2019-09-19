@@ -1,0 +1,65 @@
+-- Copyright (c) 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+-- SPDX-License-Identifier: Apache-2.0
+
+daml 1.2
+module Simplified where
+
+import DA.List
+
+template Expense with
+    payer: Party
+    beneficiaries: [Party]
+  where
+    signatory payer
+    observer beneficiaries
+
+    ensure payer `notElem` beneficiaries
+
+    choice Settle: () with
+        approvalCids: [ContractId Approval]
+      controller payer
+      do
+        approvals <- mapA fetch approvalCids
+        assert $ all (\approval -> approval.expense == self) approvals
+        assert $ sort beneficiaries == sort (map (.beneficiary) approvals)
+        forA approvalCids $ \approvalCid -> exercise approvalCid Delete
+        pure ()
+
+template Approval with
+    payer: Party
+    beneficiary: Party
+    expense: ContractId Expense
+  where
+    signatory beneficiary
+    observer payer
+
+    choice Delete: ()
+      controller payer
+      do
+        pure ()
+
+setup = scenario do
+  alice <- getParty "Alice"
+  bob <- getParty "bob"
+  charlie <- getParty "charlie"
+  cidA <- submit alice do
+    create Expense with
+      payer = alice
+      beneficiaries = [bob, charlie]
+
+  cidB <- submit bob do
+    create Approval with
+      payer = alice
+      beneficiary = bob
+      expense = cidA
+
+  cidC <- submit charlie do
+    create Approval with
+      payer = alice
+      beneficiary = charlie
+      expense = cidA
+
+  -- submit alice do
+  --   exercise cidA Settle with approvalCids = [cidC, cidB]
+
+  pure ()

@@ -1,0 +1,100 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 1fca327bd1374d63e4aa7aa24250470c28ce61e9fc45cd55304bd13a1efad3ce
+
+name:           daml-ledger
+version:        0.1.0.0
+description:    Haskell bindings for a DAML Ledger
+homepage:       https://github.com/https://github.com/digital-asset/daml#readme
+bug-reports:    https://github.com/https://github.com/digital-asset/daml/issues
+author:         The DAML Authors
+maintainer:     nick.chapman@digitalasset.com
+license:        Apache-2.0
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/https://github.com/digital-asset/daml
+
+library
+  exposed-modules:
+      DA.Ledger
+      DA.Ledger.Convert
+      DA.Ledger.GrpcWrapUtils
+      DA.Ledger.IsLedgerValue
+      DA.Ledger.LedgerService
+      DA.Ledger.PastAndFuture
+      DA.Ledger.Retry
+      DA.Ledger.Services
+      DA.Ledger.Services.ActiveContractsService
+      DA.Ledger.Services.CommandCompletionService
+      DA.Ledger.Services.CommandService
+      DA.Ledger.Services.CommandSubmissionService
+      DA.Ledger.Services.LedgerConfigurationService
+      DA.Ledger.Services.LedgerIdentityService
+      DA.Ledger.Services.PackageManagementService
+      DA.Ledger.Services.PackageService
+      DA.Ledger.Services.PartyManagementService
+      DA.Ledger.Services.ResetService
+      DA.Ledger.Services.TimeService
+      DA.Ledger.Services.TransactionService
+      DA.Ledger.Stream
+      DA.Ledger.Stream.StreamCore
+      DA.Ledger.Stream.StreamExtra
+      DA.Ledger.Trace
+      DA.Ledger.Types
+      Com.Digitalasset.Ledger.Api.V1.ActiveContractsService
+      Com.Digitalasset.Ledger.Api.V1.Admin.PackageManagementService
+      Com.Digitalasset.Ledger.Api.V1.Admin.PartyManagementService
+      Com.Digitalasset.Ledger.Api.V1.CommandCompletionService
+      Com.Digitalasset.Ledger.Api.V1.Commands
+      Com.Digitalasset.Ledger.Api.V1.CommandService
+      Com.Digitalasset.Ledger.Api.V1.CommandSubmissionService
+      Com.Digitalasset.Ledger.Api.V1.Completion
+      Com.Digitalasset.Ledger.Api.V1.Event
+      Com.Digitalasset.Ledger.Api.V1.LedgerConfigurationService
+      Com.Digitalasset.Ledger.Api.V1.LedgerIdentityService
+      Com.Digitalasset.Ledger.Api.V1.LedgerOffset
+      Com.Digitalasset.Ledger.Api.V1.PackageService
+      Com.Digitalasset.Ledger.Api.V1.Testing.ResetService
+      Com.Digitalasset.Ledger.Api.V1.Testing.TimeService
+      Com.Digitalasset.Ledger.Api.V1.TraceContext
+      Com.Digitalasset.Ledger.Api.V1.Transaction
+      Com.Digitalasset.Ledger.Api.V1.TransactionFilter
+      Com.Digitalasset.Ledger.Api.V1.TransactionService
+      Com.Digitalasset.Ledger.Api.V1.Value
+      Google.Protobuf.Any
+      Google.Protobuf.Duration
+      Google.Protobuf.Empty
+      Google.Protobuf.Timestamp
+      Google.Protobuf.Wrappers
+      Google.Rpc.Status
+  other-modules:
+      Paths_daml_ledger
+  hs-source-dirs:
+      src
+      gen/src
+  default-extensions: GeneralizedNewtypeDeriving LambdaCase NamedFieldPuns NondecreasingIndentation NumericUnderscores OverloadedStrings RecordWildCards ScopedTypeVariables
+  ghc-options: -Wall -Wno-name-shadowing
+  build-depends:
+      async
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , deepseq
+    , exceptions
+    , extra
+    , grpc-haskell
+    , proto3-suite
+    , proto3-wire
+    , retry
+    , text
+    , time
+    , transformers
+    , unliftio
+    , vector
+  default-language: Haskell2010
