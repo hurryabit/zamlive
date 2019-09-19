@@ -1,15 +1,13 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
 
-type AppProps = {}
+type Props = {}
 
-type AppState = {
+type State = {
   result: string;
 }
 
-class AccountsView extends React.Component<AppProps, AppState> {
-  constructor(props: AppProps) {
+class AccountsView extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
 
     this.state = {
