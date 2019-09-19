@@ -1,49 +1,15 @@
 import React from 'react';
-import logo from './logo.svg';
+import AccountsView from './AccountsView';
 import './App.css';
 
-type AppProps = {}
-
-type AppState = {
-  result: string;
-}
-
-class App extends React.Component<AppProps, AppState> {
-  constructor(props: AppProps) {
-    super(props);
-
-    this.state = {
-      result: ''
-    };
-  }
-
-  componentDidMount() {
-    const body = {"%templates": [{"moduleName": "Main", "entityName": "Account"}]};
-    fetch('contracts/search', {
-        body: JSON.stringify(body),
-        headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsZWRnZXJJZCI6InphbWxpdmUiLCJhcHBsaWNhdGlvbklkIjoiemFtbGl2ZSIsInBhcnR5IjoiTWFydGluIn0.uYdP2MNhOcw-zYF-_tOxZygqQldhRBgX0rCTfUgZ4A4',
-          'Content-type': 'application/json'
-        },
-        method: 'post',
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      return response.json()
-    })
-    .then(({result}) => {
-      this.setState({result: JSON.stringify(result)});
-    })
-    .catch((error) => {
-      alert('Failure!\n' + error);
-    });
-  }
-
+class App extends React.Component {
   render () {
     return (
-      <p>{this.state.result}</p>
+      <div>
+        <h1>ZAMLive</h1>
+        <hr />
+        <AccountsView />
+      </div>
     );
   }
 }
