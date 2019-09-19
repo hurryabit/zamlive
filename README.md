@@ -3,7 +3,6 @@
 ## Getting started
 
 1. Install React and friends: `yarn install`
-1. Compile DAML model: `daml build`
 1. Start Sandbox: `./scripts/sandbox.sh`
 1. Start HTTP-JSON server: `./scripts/http-json.sh`
 1. Start Web-UI server: `yarn start`

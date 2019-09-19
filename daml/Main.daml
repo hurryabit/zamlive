@@ -4,6 +4,7 @@
 daml 1.2
 module Main where
 
+import DA.Action
 import DA.Next.Map qualified as Map
 import DA.List
 
@@ -267,23 +268,31 @@ expenseSigning = scenario do
 
   pure account
 
+setupAccount : Text -> [Party] -> Scenario (ContractId Account)
+setupAccount name = \case
+  [] -> abort "Cannot create Account without members"
+  creator :: pendingMembers -> do
+    cid0 <- submit creator do
+      create AccountProposal with
+        members = [creator]
+        pendingMembers
+        name
+    AccountCreation cid2 <- foldlA f (NewAccountProposal cid0) pendingMembers
+    pure cid2
+  where
+    f res member = case res of
+      AccountCreation _ -> abort "This should not happen"
+      NewAccountProposal cid1 ->
+        submit member do
+          exercise cid1 (Accept member)
+
 setup = scenario do
   martin <- getParty "Martin"
   oliver <- getParty "Oliver"
   remy <- getParty "Remy"
+  jussi <- getParty "Jussi"
 
-  let accountName = "TGS40"
-
-  propCid1 <- submit martin do
-    create AccountProposal with
-      pendingMembers = [oliver, remy]
-      members = [martin]
-      name = accountName
-
-  NewAccountProposal propCid2 <- submit oliver do
-    exercise propCid1 (Accept oliver)
-
-  AccountCreation accountCid <- submit remy do
-    exercise propCid2 (Accept remy)
+  setupAccount "TSG40" [martin, oliver, remy]
+  setupAccount "LWS66" [martin, jussi]
 
   pure ()
