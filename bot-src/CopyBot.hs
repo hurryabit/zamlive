@@ -39,15 +39,16 @@ copyRule pid bc bs _ = updateCopies pid bc bs
 updateCopies :: PackageId -> BotContext -> BotState () () -> [((), [Command], PendingSet)]
 updateCopies pid BotContext{party} BotState{acs} = cmds
     where
+        accountTId = getTid pid "Account"
         expenseTid = getTid pid "Expense"
-        approvalTid = getTid pid "Approval"
+        approvalTid = getTid pid "ExpenseApproval"
 
         expenses :: [(ContractId, Expense)]
         expenses = getRecords @Expense expenseTid acs
-        approvals :: [(ContractId, Approval)]
-        approvals = getRecords @Approval approvalTid acs
+        approvals :: [(ContractId, ExpenseApproval)]
+        approvals = getRecords @ExpenseApproval approvalTid acs
 
-        settleCmds = map (uncurry $ settleCommand expenseTid approvalTid) $ match expenses approvals
+        settleCmds = map (settleCommand accountTId expenseTid approvalTid) $ match expenses approvals
 
         cmds = settleCmds
 
@@ -56,17 +57,17 @@ getRecords tid acs = map (\(cid, rec) -> (cid, fromJust $ fromRecord rec)) $ may
     where
         mtacs = Map.lookup tid (templateACSs acs)
 
-match :: [(ContractId, Expense)] -> [(ContractId, Approval)] -> [(ContractId, [ContractId])]
+match :: [(ContractId, Expense)] -> [(ContractId, ExpenseApproval)] -> [(Expense, ContractId, [ContractId])]
 match expenses approvals = do
-    (expenseCid, Expense{beneficiaries}) <- expenses
-    let expenseApprovals = filter (\(_, Approval{expense}) -> expense == expenseCid) approvals
-    guard $ sort beneficiaries == sort (map (beneficiary . snd) expenseApprovals)
-    pure (expenseCid, map fst expenseApprovals)
+    (expenseCid, expense@Expense{payer, beneficiaries}) <- expenses
+    let expenseApprovals = filter (\(_, ExpenseApproval{expense}) -> expense == expenseCid) approvals
+    guard $ sort beneficiaries == sort (payer : (map (beneficiary . snd) expenseApprovals))
+    pure (expense, expenseCid, map fst expenseApprovals)
 
-settleCommand :: TemplateId -> TemplateId -> ContractId -> [ContractId] -> ((), [Command], PendingSet)
-settleCommand expenseTid approvalTid expenseCid approvalCids =
-    let arg = VRecord $ Record Nothing [RecordField "" $ toValue approvalCids]
-        cmd = ExerciseCommand expenseTid expenseCid (Choice "Settle") arg
+settleCommand :: TemplateId -> TemplateId -> TemplateId -> (Expense, ContractId, [ContractId]) -> ((), [Command], PendingSet)
+settleCommand accountTId expenseTid approvalTid (Expense{payer, account}, expenseCid, approvalCids) =
+    let arg = VRecord $ Record Nothing [RecordField "" $ toValue payer, RecordField "" $ toValue expenseCid, RecordField "" $ toValue approvalCids]
+        cmd = ExerciseByKeyCommand accountTId account (Choice "SettleExpense") arg
         pending = Map.fromList
             [ (expenseTid, Set.singleton expenseCid)
             , (approvalTid, Set.fromList approvalCids)

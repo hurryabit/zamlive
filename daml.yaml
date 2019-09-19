@@ -3,10 +3,9 @@ name: zamlive
 source: daml
 scenario: Main:setup
 parties:
-  - Martin
-  - Oliver
-  - Remy
-  - Jussi
+  - Andreas
+  - Bernhard
+  - Cerolf
 version: 0.0.1
 dependencies:
   - daml-prim

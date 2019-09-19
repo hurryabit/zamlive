@@ -3,9 +3,12 @@
 
 daml 1.2
 module Main where
+<<<<<<< HEAD
 
 import DA.Action
 import DA.Next.Map qualified as Map
+=======
+>>>>>>> * clean up Main daml model
 import DA.List
 import Balance qualified
 
@@ -13,7 +16,62 @@ data AcceptResponse = AccountCreation (ContractId Account) | NewAccountProposal 
 
 isSubset s1 s2 = all (\x -> elem x s2) s1
 
+<<<<<<< HEAD
+floorB : Decimal -> Decimal
+floorB x =
+  let
+    rounded = roundBankers 2 x
+  in
+    if (rounded > x) then
+      rounded - 0.01
+    else
+      rounded
 
+membersB : Balance -> [Party]
+membersB x = map fst $ Map.toList x
+
+initEvenly : Decimal -> [Party] -> Balance
+initEvenly amount members = Map.fromList [(member, amount) | member <- members]
+
+share : Decimal -> [Party] -> Balance
+share amount members =
+  let
+    n = intToDecimal $ length members
+    aShare = floorB $ amount / n
+  in
+    initEvenly aShare members
+
+add : Balance -> Balance -> Balance
+add b1 b2 =
+  Map.merge
+    (\k a -> Some a)
+    (\k a -> Some a)
+    (\k a1 a2  -> Some (a1  + a2))
+    b1
+    b2
+
+sumB : Balance -> Decimal
+sumB b =
+  foldl (\a t -> a + (snd t)) 0.0 (Map.toList b)
+
+createExpense amount payer members =
+  let
+    b1 = share (-amount) members
+    r = amount + (sumB b1)
+  in
+    add b1 (Map.fromList [(payer, amount - r)])
+
+testBalanceArithmetics =
+  scenario do
+    alice <- getParty "Alice"
+    bob <- getParty "Bob"
+    carol <- getParty "Carol"
+    members <- pure [alice, bob, carol]
+    b1 <- pure (createExpense 1.00 alice members)
+    assert $ b1 == Map.fromList [(alice, 0.68), (bob, -0.34), (carol, -0.34)]
+
+=======
+>>>>>>> * clean up Main daml model
 type AccountKey = ([Party], Text)
 
 template AccountProposal
@@ -208,3 +266,32 @@ setup = scenario do
   -- _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
 
   pure account
+
+setupAccount : Text -> [Party] -> Scenario (ContractId Account)
+setupAccount name = \case
+  [] -> abort "Cannot create Account without members"
+  creator :: pendingMembers -> do
+    cid0 <- submit creator do
+      create AccountProposal with
+        members = [creator]
+        pendingMembers
+        name
+    AccountCreation cid2 <- foldlA f (NewAccountProposal cid0) pendingMembers
+    pure cid2
+  where
+    f res member = case res of
+      AccountCreation _ -> abort "This should not happen"
+      NewAccountProposal cid1 ->
+        submit member do
+          exercise cid1 (Accept member)
+
+setup = scenario do
+  martin <- getParty "Martin"
+  oliver <- getParty "Oliver"
+  remy <- getParty "Remy"
+  jussi <- getParty "Jussi"
+
+  setupAccount "TSG40" [martin, oliver, remy]
+  setupAccount "LWS66" [martin, jussi]
+
+  pure ()

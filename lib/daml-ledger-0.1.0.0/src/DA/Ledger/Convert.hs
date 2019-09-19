@@ -96,6 +96,14 @@ lowerCommand = \case
         createAndExerciseCommandChoice = unChoice choice,
         createAndExerciseCommandChoiceArgument = Just (lowerValue choiceArg) }
 
+    ExerciseByKeyCommand{..} -> 
+        LL.Command $ Just $ LL.CommandCommandExerciseByKey $ LL.ExerciseByKeyCommand {
+           exerciseByKeyCommandTemplateId = Just (lowerTemplateId tid),
+           exerciseByKeyCommandContractKey = Just (lowerValue key),
+           exerciseByKeyCommandChoice = unChoice choice,
+           exerciseByKeyCommandChoiceArgument = Just (lowerValue arg) 
+        }
+
 lowerTemplateId :: TemplateId -> LL.Identifier
 lowerTemplateId (TemplateId x) = lowerIdentifier x
 
