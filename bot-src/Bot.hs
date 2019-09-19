@@ -1,13 +1,13 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module DA.Ledger.App.MasterCopy.Bot (Message(..), BotContext(..), nanobot, CommandCompletion(..), Rejection) where
+module Bot (Message(..), BotContext(..), nanobot, CommandCompletion(..), Rejection) where
 
 import Control.Concurrent.Async
 import Control.Concurrent.Chan
 import DA.Ledger as Ledger
-import DA.Ledger.App.MasterCopy.Logging (colourLog,plainLog,colourWrap, Logger)
-import DA.Ledger.App.MasterCopy.MCLedger as MCLedger
+import Logging (colourLog,plainLog,colourWrap, Logger)
+import MCLedger as MCLedger
 import Data.Time
 import Data.Time.Clock
 import Data.Time.Clock.POSIX

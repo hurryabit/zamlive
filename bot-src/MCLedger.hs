@@ -1,11 +1,11 @@
 -- Copyright (c) 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 -- SPDX-License-Identifier: Apache-2.0
 
-module DA.Ledger.App.MasterCopy.MCLedger (Handle(..), connect, run) where
+module MCLedger (Handle(..), connect, run) where
 
 import DA.Ledger as Ledger
-import DA.Ledger.App.MasterCopy.Contracts (MCContract)
-import DA.Ledger.App.MasterCopy.Logging (Logger)
+import Contracts (MCContract)
+import Logging (Logger)
 import Data.Maybe (maybeToList, isJust, catMaybes)
 import Data.List (find)
 import Data.Text (pack)

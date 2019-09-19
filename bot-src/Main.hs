@@ -1,16 +1,16 @@
 
 -- Copyright (c) 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 -- SPDX-License-Identifier: Apache-2.0
-module DA.Ledger.App.MasterCopy.Main (main) where
+module Main (main) where
 
 import DA.Ledger as Ledger
-import DA.Ledger.App.MasterCopy.Bot
-import DA.Ledger.App.MasterCopy.RuleBot
-import DA.Ledger.App.MasterCopy.CopyBot
-import DA.Ledger.App.MasterCopy.Contracts
-import DA.Ledger.App.MasterCopy.Domain (Party(..), Copy(..))
-import DA.Ledger.App.MasterCopy.Logging (Logger, colourLog,plainLog,colourWrap)
-import DA.Ledger.App.MasterCopy.MCLedger
+import Bot
+import RuleBot
+import CopyBot
+import Contracts
+import Domain (Party(..), Copy(..))
+import Logging (Logger, colourLog,plainLog,colourWrap)
+import MCLedger
 import Data.Maybe
 import Data.UUID
 import qualified Data.Text.Lazy as T

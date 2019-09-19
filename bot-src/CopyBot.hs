@@ -1,14 +1,14 @@
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE TypeApplications #-}
 
-module DA.Ledger.App.MasterCopy.CopyBot (copyBot) where
+module CopyBot (copyBot) where
 
 import DA.Ledger as Ledger hiding (filter)
-import DA.Ledger.App.MasterCopy.Bot
-import DA.Ledger.App.MasterCopy.Contracts
-import DA.Ledger.App.MasterCopy.Domain
-import DA.Ledger.App.MasterCopy.Logging
-import DA.Ledger.App.MasterCopy.RuleBot
+import Bot
+import Contracts
+import Domain
+import Logging
+import RuleBot
 import DA.Ledger.IsLedgerValue (IsLedgerValue(..))
 import DA.Ledger.Types
 import Control.Monad (guard)
