@@ -1,13 +1,11 @@
 sdk-version: 0.13.25
 name: zamlive
-version: 1.0.0
-source: daml/Main.daml
-scenario: Main:mainScenario
+source: daml
+scenario: Main:setup
 parties:
-- Alice
-- Bob
-exposed-modules:
-- Main
+  - Alice
+  - Bob
+version: 0.0.1
 dependencies:
-- daml-prim
-- daml-stdlib
+  - daml-prim
+  - daml-stdlib
