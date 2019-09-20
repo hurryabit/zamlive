@@ -35,19 +35,28 @@ class ExpenseForm extends React.Component<Props, State> {
 
   render() {
     return (
-      <form onSubmit={this.handleSubmit}>
-        <label>
-          User:
-          <input type='text' name='username' value={this.state.name} onChange={this.handleDescriptionChange} />
-        </label>
-        <br />
-        <label>
-          Password:
-          <input type='password' name='password' value={this.state.password} onChange={this.handleAmountChange} />
-        </label>
-        <br />
-        <input type='submit' value='Submit' />
-      </form>
+      <div className="container">
+        <div className="row justify-content-md-center">
+          <h1>ZAMLive</h1>
+        </div>
+        <div className="row justify-content-md-center">
+          <form onSubmit={this.handleSubmit}>
+            <div className="form-group">
+              <label>
+                User name
+                <input type="text" className="form-control" name="username" placeholder="Enter user name" />
+              </label>
+            </div>
+            <div className="form-group">
+              <label>
+                Password
+                <input type="password" className="form-control" name="password" placeholder="Password" />
+              </label>
+            </div>
+            <button type="submit" className="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
     );
   }
 }
