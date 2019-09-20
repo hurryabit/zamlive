@@ -38,10 +38,11 @@ class ExpenseForm extends React.Component<Props, State> {
     return (
       <Container>
         <Row>
-          <Col>
-            <h1 className='text-center'>ZAMLive</h1>
+          <Col className="text-center">
+            <img src="logo.png" width="400" ></img>
           </Col>
         </Row>
+        <Row><p></p></Row>
         <Row>
           <Col></Col>
           <Col>
