@@ -53,3 +53,5 @@ export class Account {
     return res;
   }
 }
+
+export default Account;

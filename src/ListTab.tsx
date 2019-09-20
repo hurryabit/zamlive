@@ -1,5 +1,5 @@
 import React from 'react';
-import {Account} from './Account';
+import Account from './Account';
 import ExpenseForm from './ExpenseForm';
 import Ledger from './Ledger';
 import User from './User';
@@ -17,7 +17,7 @@ type State = {
   plain: string;
 }
 
-class AccountsList extends React.Component<Props, State> {
+class ListTab extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
 
@@ -129,4 +129,4 @@ class AccountsList extends React.Component<Props, State> {
   }
 }
 
-export default AccountsList;
+export default ListTab;

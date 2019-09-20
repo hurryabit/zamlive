@@ -1,5 +1,5 @@
 import React from 'react';
-import AccountsList from './AccountsList';
+import ListTab from './ListTab';
 import ApprovalTab from './ApprovalTab';
 import CreateTab from './CreateTab';
 import User from './User';
@@ -28,7 +28,7 @@ class Main extends React.Component<Props, State> {
   }
 
   renderAccounts(user: User) {
-    return <AccountsList user={user} />;
+    return <ListTab user={user} />;
   }
 
   renderCreate() {
