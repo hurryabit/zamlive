@@ -13,7 +13,12 @@ class Main extends React.Component<Props> {
   render () {
     let user = this.props.user;
     return (
-      <Tabs defaultActiveKey='list' id='main'>
+      <Tabs
+        id='main'
+        defaultActiveKey='list'
+        mountOnEnter={true}
+        unmountOnExit={true}
+      >
         <Tab eventKey='list' title='List Accounts'>
           <ListTab user={user} />
         </Tab>
