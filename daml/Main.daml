@@ -7,68 +7,12 @@ module Main where
 import DA.Action
 import DA.Next.Map qualified as Map
 import DA.List
+import Balance qualified
 
 data AcceptResponse = AccountCreation (ContractId Account) | NewAccountProposal (ContractId AccountProposal)
 
-addExpense balances payer amount =
-  balances
-
-type Balance = Map.Map Party Decimal
-
 isSubset s1 s2 = all (\x -> elem x s2) s1
 
-floorB : Decimal -> Decimal
-floorB x =
-  let
-    rounded = roundBankers 2 x
-  in
-    if (rounded > x) then
-      rounded - 0.01
-    else
-      rounded
-
-membersB : Balance -> [Party]
-membersB x = map fst $ Map.toList x
-
-initEvenly : Decimal -> [Party] -> Balance
-initEvenly amount members = Map.fromList [(member, amount) | member <- members]
-
-share : Decimal -> [Party] -> Balance
-share amount members =
-  let
-    n = intToDecimal $ length members
-    aShare = floorB $ amount / n
-  in
-    initEvenly aShare members
-
-add : Balance -> Balance -> Balance
-add b1 b2 =
-  Map.merge
-    (\k a -> Some a)
-    (\k a -> Some a)
-    (\k a1 a2  -> Some (a1  + a2))
-    b1
-    b2
-
-sumB : Balance -> Decimal
-sumB b =
-  foldl (\a t -> a + (snd t)) 0.0 (Map.toList b)
-
-createExpense amount payer members =
-  let
-    b1 = share (-amount) members
-    r = amount + (sumB b1)
-  in
-    add b1 (Map.fromList [(payer, amount - r)])
-
-testBalanceArithmetics =
-  scenario do
-    alice <- getParty "Alice"
-    bob <- getParty "Bob"
-    carol <- getParty "Carol"
-    members <- pure [alice, bob, carol]
-    b1 <- pure (createExpense 1.00 alice members)
-    assert $ b1 == Map.fromList [(alice, 0.68), (bob, -0.34), (carol, -0.34)]
 
 type AccountKey = ([Party], Text)
 
@@ -100,7 +44,7 @@ template AccountProposal
         if null remainingPendingMembers then
           do
             cid <- create Account with
-              balance = initEvenly 0.0 newMembers
+              balance = Balance.init newMembers
               name = name
             pure $ AccountCreation cid
         else
@@ -112,15 +56,17 @@ template AccountProposal
 
 template Account
   with
-    balance: Balance
+    balance: Balance.Balance
     name: Text
 
   where
-    let members = membersB balance
+    let 
+      members = Balance.members balance
+      accountKey = (members, name)
     signatory members
-    ensure sumB balance == 0.0
+    ensure Balance.sum balance == 0.0
 
-    key ((membersB balance), name) : AccountKey
+    key accountKey : AccountKey
     maintainer key._1
 
     nonconsuming choice SubmitExpense : ContractId Expense
@@ -129,61 +75,56 @@ template Account
         amount: Decimal
       controller payer
       do
-        create Expense with
-          submitter = payer
-          members = members
-          amount = amount
-          account = (members, name)
+        create $ Expense payer members amount accountKey
 
     choice SettleExpense : ContractId Account
       with
-        submitter: Party
+        payer: Party
         expenseId: ContractId Expense
-        signatureIds: [ContractId ExpenseSignature]
-      controller submitter
+        approvalIds: [ContractId ExpenseApproval]
+      controller payer
       do
         expense <- fetch expenseId
-        expenseMembers <- pure expense.members
-        assert $ expense.submitter == submitter
-        signatures <- (mapA fetch signatureIds)
-        signers <- pure $ submitter :: (map (\x -> x.signer) signatures)
-        assert $ expenseMembers `isSubset` signers
-        assert $ expenseMembers `isSubset` members
-        assert $ all (\x -> x.expense == expenseId) signatures
+        approvals <- (mapA fetch approvalIds)
+        signers <- pure $ payer :: map (\x -> x.beneficiary) approvals
+        assert $ expense.beneficiaries `isSubset` members
+        assert $ expense.payer == payer
+        assert $ expense.beneficiaries `isSubset` signers
+        assert $ all (\x -> x.expense == expenseId) approvals
         _ <- archive expenseId
-        _ <- mapA archive signatureIds
+        _ <- mapA archive approvalIds
         create this with
-           balance = add balance (createExpense expense.amount submitter members)
+           balance = Balance.add balance (Balance.expenseToBalance expense.amount expense.payer members)
 
 template Expense
   with
-    submitter: Party
-    members: [Party]
+    payer: Party
+    beneficiaries: [Party]
     amount: Decimal
     account: AccountKey
   where
-    signatory submitter
-    observer members
+    signatory payer
+    observer beneficiaries
 
-    nonconsuming choice Sign : ContractId ExpenseSignature
+    nonconsuming choice Sign : ContractId ExpenseApproval
       with
         signer: Party
       controller signer
       do
-        create ExpenseSignature with
-          signer = signer
+        create ExpenseApproval with
+          payer = payer
+          beneficiary = signer
           expense = self
-          expenseSubmitter = submitter
 
-template ExpenseSignature
+template ExpenseApproval
   with
-    signer: Party
+    payer: Party
+    beneficiary: Party
     expense: ContractId Expense
-    expenseSubmitter: Party
 
   where
-    signatory signer
-    observer expenseSubmitter
+    signatory beneficiary
+    observer payer
 
 basicAccountWithExpenses = scenario do
 
@@ -226,8 +167,8 @@ basicAccountWithExpenses = scenario do
 
   pure account
 
-expenseSigning = scenario do
-
+setup = scenario do
+ 
   andreas <- getParty "Andreas"
   bernhard <- getParty "Bernhard"
   cerolf <- getParty "Cerolf"
@@ -264,35 +205,6 @@ expenseSigning = scenario do
   expensePetShampooingFund <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense bernhard 70.0)
   cerolfSignature <- submit cerolf do exercise expensePetShampooingFund $ Sign cerolf
   andreasSignature <- submit andreas do exercise expensePetShampooingFund $ Sign andreas
-  _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
+  -- _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
 
   pure account
-
-setupAccount : Text -> [Party] -> Scenario (ContractId Account)
-setupAccount name = \case
-  [] -> abort "Cannot create Account without members"
-  creator :: pendingMembers -> do
-    cid0 <- submit creator do
-      create AccountProposal with
-        members = [creator]
-        pendingMembers
-        name
-    AccountCreation cid2 <- foldlA f (NewAccountProposal cid0) pendingMembers
-    pure cid2
-  where
-    f res member = case res of
-      AccountCreation _ -> abort "This should not happen"
-      NewAccountProposal cid1 ->
-        submit member do
-          exercise cid1 (Accept member)
-
-setup = scenario do
-  martin <- getParty "Martin"
-  oliver <- getParty "Oliver"
-  remy <- getParty "Remy"
-  jussi <- getParty "Jussi"
-
-  setupAccount "TSG40" [martin, oliver, remy]
-  setupAccount "LWS66" [martin, jussi]
-
-  pure ()

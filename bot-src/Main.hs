@@ -55,4 +55,4 @@ parseArgs = \case
     _ -> Nothing
 
 defaultParty :: Party
-defaultParty = Party "Alice"
+defaultParty = Party "Bernhard"
