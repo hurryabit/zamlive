@@ -90,7 +90,10 @@ class ListTab extends React.Component<Props, State> {
           <Col>
             <ListGroup className='text-center'>
               {this.state.accounts.map((account, index) =>
-                <ListGroup.Item onClick={() => this.showDetails(index)}>{account.name}</ListGroup.Item>
+                <ListGroup.Item
+                  key={account.name}
+                  onClick={() => this.showDetails(index)}>{account.name}</ListGroup.Item
+                >
               )}
             </ListGroup>
           </Col>

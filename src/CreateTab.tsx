@@ -7,12 +7,9 @@ type Props = {
     user: User;
 }
 
-type Status = 'Ok' | 'Fail' | 'Unknown'
-
 type State = {
-    members: string[];
     name: string;
-    status: Status;
+    members: string[];
 }
 
 class CreateTab extends React.Component<Props, State> {
@@ -49,7 +46,6 @@ class CreateTab extends React.Component<Props, State> {
         this.state = {
             members: [this.props.user.name],
             name: '',
-            status: 'Unknown',
         };
     }
 
@@ -63,35 +59,39 @@ class CreateTab extends React.Component<Props, State> {
                 members.push(options[i].value);
         }
 
-        this.setState({members: members, status: 'Unknown'});
+        this.setState({members});
     };
 
     handleNameChange = (event: React.FormEvent<FormControlProps & FormControl>) => {
-        this.setState({name: event.currentTarget.value || '', status: 'Unknown'})
+        this.setState({name: event.currentTarget.value || ''})
     };
 
     handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const user = this.props.user.name;
+        const pendingMembers = this.state.members.filter((value, _1, _2) => value !== user);
+
+        if (pendingMembers.length === 0) {
+            alert('You must specify at least one other member than yourself.');
+            return;
+        }
+
         const payload = {
             templateId: {
                 moduleName: "Main",
                 entityName: "AccountProposal"
             },
             argument: {
-                pendingMembers:
-                    this.state.members.filter((value, _1, _2) => value !== user),
+                pendingMembers: pendingMembers,
                 members: [user],
                 name: this.state.name,
             }
         };
         console.log(payload);
-        Ledger.fetch(this.props.user, 'command/create', payload).then(
-            x => {
-                console.log(x)
-                this.setState({status: 'Ok'})},
-            _ => this.setState({status: 'Fail'})
-        )
+        Ledger.fetch(this.props.user, 'command/create', payload)
+        .then(() => {
+            alert('Account proposal successfully created');
+        });
     };
 
 
@@ -130,14 +130,6 @@ class CreateTab extends React.Component<Props, State> {
                                 </select>
                             </Form.Group>
                             <Button type="submit" className='btn-block'>Submit</Button>
-                            <br/><br/>
-                            {
-                                (this.state.status === 'Ok') ?
-                                    <div style={{color:"green", fontWeight: "bold"}}>Account Proposal created successfully</div> :
-                                    (this.state.status === 'Fail') ?
-                                        <div style={{color:"red", fontWeight: "bold"}}>Account Proposal creation fails</div> :
-                                        <div/>
-                            }
                         </Form>
                     </Col>
                     <Col>
