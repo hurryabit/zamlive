@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Container, Form, FormControl, FormControlProps, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, FormControl, FormControlProps, Row } from 'react-bootstrap';
 import User from './User';
 
 type Props = {
@@ -37,33 +37,39 @@ class ExpenseForm extends React.Component<Props, State> {
   render() {
     return (
       <Container>
-        <Row className="justify-content-md-center">
-          <h1>ZAMLive</h1>
+        <Row>
+          <Col>
+            <h1 className='text-center'>ZAMLive</h1>
+          </Col>
         </Row>
-        <Row className="justify-content-md-center">
-          <Form onSubmit={this.handleSubmit}>
-            <Form.Group>
-              <Form.Label>User Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="username"
-                placeholder="User Name"
-                value={this.state.name}
-                onChange={this.handleUsernameChange}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={this.state.password}
-                onChange={this.handlePasswordChange}
-              />
-            </Form.Group>
-            <Button type="submit">Log In</Button>
-          </Form>
+        <Row>
+          <Col></Col>
+          <Col>
+            <Form onSubmit={this.handleSubmit}>
+              <Form.Group>
+                <Form.Label>User Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="username"
+                  placeholder="User Name"
+                  value={this.state.name}
+                  onChange={this.handleUsernameChange}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={this.state.password}
+                  onChange={this.handlePasswordChange}
+                />
+              </Form.Group>
+              <Button type="submit" className='btn-block'>Log In</Button>
+            </Form>
+          </Col>
+          <Col></Col>
         </Row>
       </Container>
     );
