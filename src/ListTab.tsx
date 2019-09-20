@@ -67,7 +67,7 @@ class ListTab extends React.Component<Props, State> {
 
       this.setState({mode: 'Details'});
     });
-  }
+  };
 
   showList() {
     this.setState({mode: 'List', selected: null});

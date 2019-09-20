@@ -31,8 +31,8 @@ class Main extends React.Component<Props, State> {
     return <ListTab user={user} />;
   }
 
-  renderCreate() {
-    return <CreateTab />;
+  renderCreate(user: User) {
+    return <CreateTab user={user}/>;
   }
 
   renderApprovals(user: User) {
@@ -47,7 +47,7 @@ class Main extends React.Component<Props, State> {
         body = this.renderAccounts(user);
         break;
       case 'Create':
-        body = this.renderCreate();
+        body = this.renderCreate(user);
         break;
       case 'Approvals':
         body = this.renderApprovals(user);
