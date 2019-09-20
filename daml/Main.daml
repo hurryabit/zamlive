@@ -86,7 +86,7 @@ template Account
       do
         expense <- fetch expenseId
         approvals <- (mapA fetch approvalIds)
-        signers <- pure $ payer :: map (\x -> x.benificiary) approvals
+        signers <- pure $ payer :: map (\x -> x.beneficiary) approvals
         assert $ expense.beneficiaries `isSubset` members
         assert $ expense.payer == payer
         assert $ expense.beneficiaries `isSubset` signers
@@ -113,17 +113,17 @@ template Expense
       do
         create ExpenseApproval with
           payer = payer
-          benificiary = signer
+          beneficiary = signer
           expense = self
 
 template ExpenseApproval
   with
     payer: Party
-    benificiary: Party
+    beneficiary: Party
     expense: ContractId Expense
 
   where
-    signatory benificiary
+    signatory beneficiary
     observer payer
 
 basicAccountWithExpenses = scenario do
