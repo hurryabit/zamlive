@@ -16,7 +16,31 @@ type State = {
 
 class CreateTab extends React.Component<Props, State> {
 
-    private users = ["Martin", "Oliver", "Remy", "Jussi"];
+    private users = [
+        "Andreas",
+        "Bernhard",
+        "Darko",
+        "Georg",
+        "Gerolf",
+        "Helena",
+        "Jussi",
+        "Luciano",
+        "Marcin",
+        "Martin",
+        "Matthias",
+        "Moritz",
+        "Ognjen",
+        "Oliver",
+        "Ramona",
+        "Ratko",
+        "Remy",
+        "Robert",
+        "Robin",
+        "Simon",
+        "Soren",
+        "Stefano",
+        "Thomas",
+    ];
 
     constructor(props: Props) {
         super(props);
