@@ -19,6 +19,7 @@ class Main extends React.Component<Props> {
         mountOnEnter={true}
         unmountOnExit={true}
       >
+        <Tab eventKey='home' title='ZAMLive' disabled />
         <Tab eventKey='list' title='List Accounts'>
           <ListTab user={user} />
         </Tab>
@@ -28,6 +29,7 @@ class Main extends React.Component<Props> {
         <Tab eventKey='approve' title='Approvals'>
           <ApprovalTab user={user} />
         </Tab>
+        <Tab eventKey='user' title={'You\'re logged in as ' + user.name + '.'} disabled />
       </Tabs>
     );
   }
