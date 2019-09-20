@@ -1,9 +1,10 @@
 import React from 'react';
 import {Account} from './Account';
 import ExpenseForm from './ExpenseForm';
+import User from './User';
 
 type Props = {
-  payer: string,
+  user: User;
 }
 
 type Mode = 'List' | 'Details' | 'Add';
@@ -40,7 +41,7 @@ class AccountsList extends React.Component<Props, State> {
     fetch('contracts/search', {
         body: JSON.stringify(body),
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsZWRnZXJJZCI6InphbWxpdmUiLCJhcHBsaWNhdGlvbklkIjoiemFtbGl2ZSIsInBhcnR5IjoiTWFydGluIn0.uYdP2MNhOcw-zYF-_tOxZygqQldhRBgX0rCTfUgZ4A4',
+          'Authorization': 'Bearer ' + this.props.user.password,
           'Content-type': 'application/json'
         },
         method: 'post',
@@ -70,14 +71,14 @@ class AccountsList extends React.Component<Props, State> {
       contractId: account.contractId,
       choice: 'SubmitExpense',
       argument: {
-        payer: this.props.payer,
+        payer: this.props.user.name,
         amount: amount
       }
     };
     fetch('command/exercise', {
         body: JSON.stringify(body),
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsZWRnZXJJZCI6InphbWxpdmUiLCJhcHBsaWNhdGlvbklkIjoiemFtbGl2ZSIsInBhcnR5IjoiTWFydGluIn0.uYdP2MNhOcw-zYF-_tOxZygqQldhRBgX0rCTfUgZ4A4',
+          'Authorization': 'Bearer ' + this.props.user.password,
           'Content-type': 'application/json'
         },
         method: 'post',

@@ -2,6 +2,7 @@ import React from 'react';
 import AccountsList from './AccountsList';
 import ApprovalTab from './ApprovalTab';
 import CreateTab from './CreateTab';
+import User from './User';
 import './App.css';
 
 type Props = {}
@@ -25,29 +26,33 @@ class App extends React.Component<Props, State> {
     this.setState({mode});
   }
 
-  renderAccounts() {
-    return <AccountsList payer='Martin' />;
+  renderAccounts(user: User) {
+    return <AccountsList user={user} />;
   }
 
   renderCreate() {
     return <CreateTab />;
   }
 
-  renderApprovals() {
-    return <ApprovalTab />;
+  renderApprovals(user: User) {
+    return <ApprovalTab user={user} />;
   }
 
   render () {
+    let user = {
+      name: 'Martin',
+      password: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsZWRnZXJJZCI6InphbWxpdmUiLCJhcHBsaWNhdGlvbklkIjoiemFtbGl2ZSIsInBhcnR5IjoiTWFydGluIn0.uYdP2MNhOcw-zYF-_tOxZygqQldhRBgX0rCTfUgZ4A4'
+    }
     let body;
     switch (this.state.mode) {
       case 'Accounts':
-        body = this.renderAccounts();
+        body = this.renderAccounts(user);
         break;
       case 'Create':
         body = this.renderCreate();
         break;
       case 'Approvals':
-        body = this.renderApprovals();
+        body = this.renderApprovals(user);
         break;
     }
     return (
