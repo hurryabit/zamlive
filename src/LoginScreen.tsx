@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button, Container, Form, FormControl, FormControlProps, Row } from 'react-bootstrap';
 import User from './User';
 
 type Props = {
@@ -19,12 +20,12 @@ class ExpenseForm extends React.Component<Props, State> {
     };
   }
 
-  handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({name: event.currentTarget.value});
+  handleUsernameChange = (event: React.FormEvent<FormControlProps & FormControl>) => {
+    this.setState({name: event.currentTarget.value || ''});
   }
 
-  handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({password: event.currentTarget.value});
+  handlePasswordChange = (event: React.FormEvent<FormControlProps & FormControl>) => {
+    this.setState({password: event.currentTarget.value || ''});
   }
 
   handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -35,42 +36,36 @@ class ExpenseForm extends React.Component<Props, State> {
 
   render() {
     return (
-      <div className="container">
-        <div className="row justify-content-md-center">
+      <Container>
+        <Row className="justify-content-md-center">
           <h1>ZAMLive</h1>
-        </div>
-        <div className="row justify-content-md-center">
-          <form onSubmit={this.handleSubmit}>
-            <div className="form-group">
-              <label>
-                User name
-                <input
-                  type="text"
-                  className="form-control"
-                  name="username"
-                  placeholder="Enter user name"
-                  value={this.state.name}
-                  onChange={this.handleUsernameChange}
-                />
-              </label>
-            </div>
-            <div className="form-group">
-              <label>
-                Password
-                <input
-                  type="password"
-                  className="form-control"
-                  name="password"
-                  placeholder="Password"
-                  value={this.state.password}
-                  onChange={this.handlePasswordChange}
-                />
-              </label>
-            </div>
-            <button type="submit" className="btn btn-primary">Submit</button>
-          </form>
-        </div>
-      </div>
+        </Row>
+        <Row className="justify-content-md-center">
+          <Form onSubmit={this.handleSubmit}>
+            <Form.Group>
+              <Form.Label>User Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="username"
+                placeholder="User Name"
+                value={this.state.name}
+                onChange={this.handleUsernameChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={this.state.password}
+                onChange={this.handlePasswordChange}
+              />
+            </Form.Group>
+            <Button type="submit" className="btn btn-primary">Log In</Button>
+          </Form>
+        </Row>
+      </Container>
     );
   }
 }
