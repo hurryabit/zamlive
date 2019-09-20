@@ -42,7 +42,7 @@ template AccountProposal
         if null remainingPendingMembers then
           do
             cid <- create Account with
-              balance = Balance.init (sort newMembers)
+              balance = Balance.init newMembers
               name = name
             pure $ AccountCreation cid
         else
@@ -60,7 +60,7 @@ template Account
   where
     let
       members = Balance.members balance
-      accountKey = (members, name)
+      accountKey = (sort $ members, name)
     signatory members
     ensure Balance.sum balance == 0.0
 
@@ -206,7 +206,7 @@ setup = scenario do
     NewAccountProposal _ -> error "Everybody has accepted so should have account"
     AccountCreation cid -> pure cid
 
-  accountKey <- pure ([martin, oliver, remy], accountName)
+  accountKey <- pure (sort [martin, oliver, remy], accountName)
 
   (expenseCableTVBill, [oliversNotId, remyNotId]) <- submit martin do exerciseByKey @Account accountKey (SubmitExpense "Cable TV" martin 100.0)
   remySignature <- submit remy do exercise remyNotId Sign
