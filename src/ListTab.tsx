@@ -83,7 +83,7 @@ class ListTab extends React.Component<Props, State> {
       <Container>
         <Row>
           <Col>
-            <h2 className='text-center'>{this.state.accounts.length > 0 ? 'All Accounts' : 'No Accounts'}</h2>
+            <h1 className='text-center'>{this.state.accounts.length > 0 ? 'All Accounts' : 'No Accounts'}</h1>
           </Col>
         </Row>
         <Row>
