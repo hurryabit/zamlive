@@ -9,7 +9,7 @@ export class ExpenseNotification {
   accountName: string = '';
 
   static fromJson(obj: any): ExpenseNotification {
-    let res: ExpenseNotification = new ExpenseNotification()
+    let res: ExpenseNotification = new ExpenseNotification();
     res.templateId = obj.templateId;
     res.contractId = obj.contractId;
     res.approver = obj.argument.approver;
