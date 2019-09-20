@@ -1,18 +1,37 @@
 import React from 'react';
+import LoginScreen from './LoginScreen';
 import Main from './Main';
 import User from './User';
 import './App.css';
 
-class App extends React.Component {
-  render() {
-    let user: User = {
-      name: 'Martin',
-      password: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsZWRnZXJJZCI6InphbWxpdmUiLCJhcHBsaWNhdGlvbklkIjoiemFtbGl2ZSIsInBhcnR5IjoiTWFydGluIn0.uYdP2MNhOcw-zYF-_tOxZygqQldhRBgX0rCTfUgZ4A4'
-    }
+type Props = {}
 
-    return (
-      <Main user={user} />
-    );
+type State = {
+  user: User | null;
+}
+
+class App extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      user: null
+    }
+  }
+
+  handleLogin = (user: User) => {
+    this.setState({user});
+  }
+
+  render() {
+    const user = this.state.user;
+    if (user) {
+      return (
+        <Main user={user} />
+      );
+    } else {
+      return <LoginScreen onSubmit={this.handleLogin} />;
+    }
   }
 }
 
