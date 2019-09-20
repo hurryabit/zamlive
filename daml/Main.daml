@@ -4,8 +4,6 @@
 daml 1.2
 module Main where
 
-import DA.Action
-import DA.Next.Map qualified as Map
 import DA.List
 import Balance qualified
 
@@ -60,7 +58,7 @@ template Account
     name: Text
 
   where
-    let 
+    let
       members = Balance.members balance
       accountKey = (members, name)
     signatory members
@@ -168,7 +166,7 @@ basicAccountWithExpenses = scenario do
   pure account
 
 setup = scenario do
- 
+
   andreas <- getParty "Andreas"
   bernhard <- getParty "Bernhard"
   cerolf <- getParty "Cerolf"
