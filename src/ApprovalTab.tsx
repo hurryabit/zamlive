@@ -1,6 +1,11 @@
 import React from 'react';
+import User from './User';
 
-class ApprovalTab extends React.Component {
+type Props = {
+  user: User;
+}
+
+class ApprovalTab extends React.Component<Props> {
   render() {
     return (
       <h2>Approvals</h2>
