@@ -202,7 +202,7 @@ setup = scenario do
   bernhardSignature <- submit bernhard do exercise expenseCableTVBill $ Sign bernhard
   _ <- submit andreas do exerciseByKey @Account accountKey (SettleExpense andreas expenseCableTVBill [bernhardSignature, cerolfSignature])
 
-  expensePetShampooingFund <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense "Pet shanpooing" bernhard 70.0)
+  expensePetShampooingFund <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense "Pet shampooing" bernhard 70.0)
   cerolfSignature <- submit cerolf do exercise expensePetShampooingFund $ Sign cerolf
   andreasSignature <- submit andreas do exercise expensePetShampooingFund $ Sign andreas
   -- _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
