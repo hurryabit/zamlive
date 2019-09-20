@@ -1,6 +1,7 @@
 import React from 'react';
 import {Account} from './Account';
 import ExpenseForm from './ExpenseForm';
+import Ledger from './Ledger';
 import User from './User';
 
 type Props = {
@@ -37,21 +38,8 @@ class AccountsList extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const body = {"%templates": [{"moduleName": "Main", "entityName": "Account"}]};
-    fetch('contracts/search', {
-        body: JSON.stringify(body),
-        headers: {
-          'Authorization': 'Bearer ' + this.props.user.password,
-          'Content-type': 'application/json'
-        },
-        method: 'post',
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      return response.json()
-    })
+    const payload = {"%templates": [{"moduleName": "Main", "entityName": "Account"}]};
+    Ledger.fetch(this.props.user, 'contracts/search', payload)
     .then(({result}) => {
       let accounts: Account[] = [];
       for (let workflow of result) {
@@ -67,26 +55,13 @@ class AccountsList extends React.Component<Props, State> {
     const account = this.getAccount();
     const payer = this.props.user.name;
 
-    const body = {
+    const payload = {
       templateId: account.templateId,
       contractId: account.contractId,
       choice: 'SubmitExpense',
       argument: { description, payer, amount }
     };
-    fetch('command/exercise', {
-        body: JSON.stringify(body),
-        headers: {
-          'Authorization': 'Bearer ' + this.props.user.password,
-          'Content-type': 'application/json'
-        },
-        method: 'post',
-    })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(response.statusText + '\n' + JSON.stringify(response));
-      }
-      return response.json()
-    })
+    Ledger.fetch(this.props.user, 'command/exercise', payload)
     .then(() => {
       alert('Expense successfully submitted');
 
