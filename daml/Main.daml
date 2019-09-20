@@ -42,7 +42,7 @@ template AccountProposal
         if null remainingPendingMembers then
           do
             cid <- create Account with
-              balance = Balance.init newMembers
+              balance = Balance.init (sort newMembers)
               name = name
             pure $ AccountCreation cid
         else
