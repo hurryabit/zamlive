@@ -115,7 +115,8 @@ class ApprovalTab extends React.Component<Props, State> {
                           <Table>
                             <thead className='text-center'>
                               <tr>
-                                <th scope='col'>Purpose</th>
+                                <th scope='col'>Account</th>
+                                <th scope='col'>Description</th>
                                 <th scope='col'>Payer</th>
                                 <th scope='col'>Amount</th>
                                 <th></th>
@@ -124,6 +125,7 @@ class ApprovalTab extends React.Component<Props, State> {
                             <tbody>
                               {this.state.expensesToApprove.map((expenseNotification) =>
                                 <tr>
+                                  <td className='align-middle'>{expenseNotification.accountName}</td>
                                   <td className='align-middle'>{expenseNotification.description}</td>
                                   <td className='align-middle'>{expenseNotification.payer}</td>
                                   <td className='align-middle text-right'>{expenseNotification.amount}</td>
