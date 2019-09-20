@@ -2,6 +2,7 @@ import React from 'react';
 import LoginScreen from './LoginScreen';
 import Main from './Main';
 import User from './User';
+import 'bootstrap/dist/css/bootstrap.css';
 import './App.css';
 
 type Props = {}
