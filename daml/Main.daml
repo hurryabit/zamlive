@@ -67,14 +67,17 @@ template Account
     key accountKey : AccountKey
     maintainer key._1
 
-    nonconsuming choice SubmitExpense : ContractId Expense
+    nonconsuming choice SubmitExpense : (ContractId Expense, [ContractId ExpenseNotification])
       with
         description: Text
         payer: Party
         amount: Decimal
       controller payer
       do
-        create $ Expense description payer members amount accountKey
+        expense <- pure $ Expense description payer members amount accountKey
+        expenseId <- create expense
+        notifications <- mapA (\approver -> create $ ExpenseNotification expense expenseId approver) (filter (payer /=) members)
+        pure (expenseId, notifications)
 
     choice SettleExpense : ContractId Account
       with
@@ -85,7 +88,7 @@ template Account
       do
         expense <- fetch expenseId
         approvals <- (mapA fetch approvalIds)
-        signers <- pure $ payer :: map (\x -> x.beneficiary) approvals
+        signers <- pure $ payer :: map (\x -> x.approver) approvals
         assert $ expense.beneficiaries `isSubset` members
         assert $ expense.payer == payer
         assert $ expense.beneficiaries `isSubset` signers
@@ -106,105 +109,113 @@ template Expense
     signatory payer
     observer beneficiaries
 
-    nonconsuming choice Sign : ContractId ExpenseApproval
-      with
-        signer: Party
-      controller signer
-      do
-        create ExpenseApproval with
-          payer = payer
-          beneficiary = signer
-          expense = self
+template ExpenseNotification
+  with
+    expense: Expense
+    expenseId: ContractId Expense
+    approver: Party
+  where
+    signatory expense.payer
+    observer approver
+
+    choice Sign: ContractId ExpenseApproval
+      controller approver
+        do
+          create ExpenseApproval with
+            payer = expense.payer
+            approver = approver
+            expense = expenseId
+
+
 
 template ExpenseApproval
   with
     payer: Party
-    beneficiary: Party
+    approver: Party
     expense: ContractId Expense
-
   where
-    signatory beneficiary
+    signatory approver
     observer payer
 
 basicAccountWithExpenses = scenario do
 
-  andreas <- getParty "Andreas"
-  bernhard <- getParty "Bernhard"
-  cerolf <- getParty "Cerolf"
+  martin <- getParty "Martin"
+  oliver <- getParty "Oliver"
+  remy <- getParty "Remy"
 
   accountName <- pure "flat share thurgauerstrasse"
 
-  cid <- submit andreas do
+  cid <- submit martin do
     create AccountProposal with
-      pendingMembers = [bernhard, cerolf]
-      members = [andreas]
+      pendingMembers = [oliver, remy]
+      members = [martin]
       name = accountName
 
-  proposalByAndreas <-
-      submit bernhard do
-        exercise cid (Accept bernhard)
+  proposalByMartin <-
+      submit oliver do
+        exercise cid (Accept oliver)
 
-  proposalWithAndreasAndBernhard <- case proposalByAndreas of
-    AccountCreation _ -> error "Need Cerolf to accept"
+  proposalWithMartinAndOliver <- case proposalByMartin of
+    AccountCreation _ -> error "Need Remy to accept"
     NewAccountProposal cid ->
-      submit cerolf do
-        exercise cid (Accept cerolf)
+      submit remy do
+        exercise cid (Accept remy)
 
-  account <- case proposalWithAndreasAndBernhard of
+  account <- case proposalWithMartinAndOliver of
     NewAccountProposal _ -> error "Everybody has accepted so should have account"
     AccountCreation cid -> pure cid
 
-  accountKey <- pure ([andreas, bernhard, cerolf], accountName)
+  accountKey <- pure ([martin, oliver, remy], accountName)
 
   -- BUGBUG: Should make scenario fail but doesn't if Accept changed to nonconuming
-  -- duplicate_account <- case proposalWithAndreasAndBernhard of
+  -- duplicate_account <- case proposalWithMartinAndOliver of
   --   NewAccountProposal _ -> error "Everybody has accepted so should have account"
   --   AccountCreation cid -> pure cid
 
-  _ <- submit cerolf do exerciseByKey @Account accountKey (SubmitExpense "candies" cerolf 100.0)
+  _ <- submit remy do exerciseByKey @Account accountKey (SubmitExpense "candies" remy 100.0)
 
-  _ <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense "chocolate" bernhard 70.0)
+  _ <- submit oliver do exerciseByKey @Account accountKey (SubmitExpense "chocolate" oliver 70.0)
 
   pure account
 
 setup = scenario do
 
-  andreas <- getParty "Andreas"
-  bernhard <- getParty "Bernhard"
-  cerolf <- getParty "Cerolf"
+  martin <- getParty "Martin"
+  oliver <- getParty "Oliver"
+  remy <- getParty "Remy"
 
-  accountName <- pure "flat share thurgauerstrasse"
+  accountName <- pure "Thurgauerstrasse flat"
 
-  cid <- submit andreas do
+  cid <- submit martin do
     create AccountProposal with
-      pendingMembers = [bernhard, cerolf]
-      members = [andreas]
+      pendingMembers = [oliver, remy]
+      members = [martin]
       name = accountName
 
-  proposalByAndreas <-
-      submit bernhard do
-        exercise cid (Accept bernhard)
+  proposalByMartin <-
+      submit oliver do
+        exercise cid (Accept oliver)
 
-  proposalWithAndreasAndBernhard <- case proposalByAndreas of
-    AccountCreation _ -> error "Need Cerolf to accept"
+  proposalWithMartinAndOliver <- case proposalByMartin of
+    AccountCreation _ -> error "Need Remy to accept"
     NewAccountProposal cid ->
-      submit cerolf do
-        exercise cid (Accept cerolf)
+      submit remy do
+        exercise cid (Accept remy)
 
-  account <- case proposalWithAndreasAndBernhard of
+  account <- case proposalWithMartinAndOliver of
     NewAccountProposal _ -> error "Everybody has accepted so should have account"
     AccountCreation cid -> pure cid
 
-  accountKey <- pure ([andreas, bernhard, cerolf], accountName)
+  accountKey <- pure ([martin, oliver, remy], accountName)
 
-  expenseCableTVBill <- submit andreas do exerciseByKey @Account accountKey (SubmitExpense "Cable TV" andreas 100.0)
-  cerolfSignature <- submit cerolf do exercise expenseCableTVBill $ Sign cerolf
-  bernhardSignature <- submit bernhard do exercise expenseCableTVBill $ Sign bernhard
-  _ <- submit andreas do exerciseByKey @Account accountKey (SettleExpense andreas expenseCableTVBill [bernhardSignature, cerolfSignature])
+  (expenseCableTVBill, [oliversNotId, remyNotId]) <- submit martin do exerciseByKey @Account accountKey (SubmitExpense "Cable TV" martin 100.0)
+  remySignature <- submit remy do exercise remyNotId Sign
+  oliverSignature <- submit oliver do exercise oliversNotId Sign
+  _ <- submit martin do exerciseByKey @Account accountKey (SettleExpense martin expenseCableTVBill [oliverSignature, remySignature])
 
-  expensePetShampooingFund <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense "Pet shampooing" bernhard 70.0)
-  cerolfSignature <- submit cerolf do exercise expensePetShampooingFund $ Sign cerolf
-  andreasSignature <- submit andreas do exercise expensePetShampooingFund $ Sign andreas
-  -- _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
+  (expensePetShampooingFund, [martinNotId, remyNotId]) <- submit oliver do exerciseByKey @Account accountKey (SubmitExpense "Pet shampooing" oliver 70.0)
+  remySignature <- submit remy do exercise remyNotId Sign
+  martinSignature <- submit martin do exercise martinNotId Sign
+  -- _ <- submit oliver do exerciseByKey @Account accountKey (SettleExpense oliver expensePetShampooingFund [martinSignature, remySignature])
 
   pure account
