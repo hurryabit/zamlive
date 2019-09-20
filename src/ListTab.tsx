@@ -124,7 +124,7 @@ class ListTab extends React.Component<Props, State> {
                             <thead className='text-center'>
                               <tr>
                                 <th scope='col'>Member</th>
-                                <th>Balance</th>
+                                <th scope='col'>Balance</th>
                               </tr>
                             </thead>
                             <tbody>

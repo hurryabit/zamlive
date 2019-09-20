@@ -1,4 +1,5 @@
 import React from 'react';
+import { Accordion, Button, Card, Col, Container, Row, Table } from 'react-bootstrap';
 import AccountProposal from './AccountProposal';
 import ExpenseNotification from './ExpenseNotification';
 import Ledger from './Ledger';
@@ -78,7 +79,7 @@ class ApprovalTab extends React.Component<Props, State> {
       for (let workflow of result) {
         for (let expenseToApprove of workflow.activeContracts) {
           let expenseNotification: ExpenseNotification = ExpenseNotification.fromJson(expenseToApprove);
-          if (expenseNotification.approver == this.props.user.name) {
+          if (expenseNotification.approver === this.props.user.name) {
             expenseNotifications.push(expenseNotification);
           }
         }
@@ -93,20 +94,79 @@ class ApprovalTab extends React.Component<Props, State> {
 
   renderProposals() {
     return (
-      <div>
-        <h2>Approvals</h2>
-        <h4>Accounts</h4>
-        <ul>
-          {this.state.accountApprovals.map((proposal, index) =>
-            <li key={index}><button onClick={() => this.handleApproveAccountProposal(proposal)}>{proposal.name}</button></li>)}
-        </ul>
-        <h4>Expenses</h4>
-        <table>
-          <tr><th>Amount</th><th>Payer</th><th>Purpose</th></tr>
-          {this.state.expensesToApprove.map((expenseNotification, index) =>
-            <tr><td>{expenseNotification.amount}</td><td>{expenseNotification.payer}</td><td><button onClick={() => this.handleApproveExpense(expenseNotification)}>{expenseNotification.description}</button></td></tr>)}
-        </table>
-      </div>
+      <Container>
+        <Row>
+          <Col>
+            <h1 className='text-center'>Pending Approvals</h1>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <Accordion defaultActiveKey="expenses">
+              <Card>
+                <Accordion.Toggle as={Card.Header} eventKey="expenses">
+                  Expense Approvals
+                </Accordion.Toggle>
+                <Accordion.Collapse eventKey="expenses">
+                  <Card.Body>
+                    <Container>
+                      <Row>
+                        <Col>
+                          <Table>
+                            <thead className='text-center'>
+                              <tr>
+                                <th scope='col'>Purpose</th>
+                                <th scope='col'>Payer</th>
+                                <th scope='col'>Amount</th>
+                                <th></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {this.state.expensesToApprove.map((expenseNotification) =>
+                                <tr>
+                                  <td className='align-middle'>{expenseNotification.description}</td>
+                                  <td className='align-middle'>{expenseNotification.payer}</td>
+                                  <td className='align-middle text-right'>{expenseNotification.amount}</td>
+                                  <td>
+                                    <Button
+                                      className='btn-block'
+                                      onClick={() => this.handleApproveExpense(expenseNotification)}
+                                    >
+                                      Approve
+                                    </Button>
+                                  </td>
+                                </tr>)}
+                            </tbody>
+                          </Table>
+                        </Col>
+                      </Row>
+                    </Container>
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+              <Card>
+                <Accordion.Toggle as={Card.Header} eventKey="accounts">
+                  Account Approvals
+                </Accordion.Toggle>
+                <Accordion.Collapse eventKey="accounts">
+                  <Card.Body>
+                    <Container>
+                      <Row>
+                        <Col>
+                          <ul>
+                            {this.state.accountApprovals.map((proposal, index) =>
+                              <li key={index}><button onClick={() => this.handleApproveAccountProposal(proposal)}>{proposal.name}</button></li>)}
+                          </ul>
+                        </Col>
+                      </Row>
+                    </Container>
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+            </Accordion>
+          </Col>
+        </Row>
+      </Container>
     )
   }
 
