@@ -82,7 +82,7 @@ class ListTab extends React.Component<Props, State> {
     return (
       <Container>
         <Row className="justify-content-md-center">
-          <h2>All Accounts</h2>
+          <h2>{this.state.accounts.length > 0 ? 'All Accounts' : 'No Accounts'}</h2>
         </Row>
         <Row className="justify-content-md-center">
           <ListGroup>
