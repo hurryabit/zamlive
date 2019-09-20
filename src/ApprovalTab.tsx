@@ -119,7 +119,7 @@ class ApprovalTab extends React.Component<Props, State> {
                                 <th scope='col'>Description</th>
                                 <th scope='col'>Payer</th>
                                 <th scope='col'>Amount</th>
-                                <th></th>
+                                <th scope='col'></th>
                               </tr>
                             </thead>
                             <tbody>
@@ -148,17 +148,40 @@ class ApprovalTab extends React.Component<Props, State> {
               </Card>
               <Card>
                 <Accordion.Toggle as={Card.Header} eventKey="accounts">
-                  Account Approvals
+                  Account Invitations
                 </Accordion.Toggle>
                 <Accordion.Collapse eventKey="accounts">
                   <Card.Body>
                     <Container>
                       <Row>
                         <Col>
-                          <ul>
-                            {this.state.accountApprovals.map((proposal, index) =>
-                              <li key={index}><button onClick={() => this.handleApproveAccountProposal(proposal)}>{proposal.name}</button></li>)}
-                          </ul>
+                          <Table>
+                            <thead className='text-center'>
+                              <tr>
+                                <th scope='col'>Account</th>
+                                <th scope='col'>Members</th>
+                                <th scope='col'>Pending Members</th>
+                                <th scope='col'></th>
+                             </tr>
+                            </thead>
+                            <tbody>
+                              {this.state.accountApprovals.map((proposal) =>
+                                <tr>
+                                  <td className='align-middle'>{proposal.name}</td>
+                                  <td className='align-middle'>{proposal.members.join(', ')}</td>
+                                  <td className='align-middle'>{proposal.pendingMembers.join(', ')}</td>
+                                  <td>
+                                    <Button
+                                      className='btn-block'
+                                      onClick={() => this.handleApproveAccountProposal(proposal)}
+                                    >
+                                      Join
+                                    </Button>
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </Table>
                         </Col>
                       </Row>
                     </Container>
