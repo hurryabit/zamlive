@@ -62,7 +62,8 @@ instance IsLedgerValue Token where
         _ -> Nothing
 
 data Expense = Expense
-    { payer :: Party
+    { description :: Text
+    , payer :: Party
     , beneficiaries :: [Party]
     , amount :: Value
     , account :: Value
@@ -70,10 +71,10 @@ data Expense = Expense
     deriving (Eq, Show)
 
 instance IsLedgerValue Expense where
-    toValue Expense{payer, beneficiaries, amount, account} = 
-      VList [toValue payer, toValue beneficiaries, amount, account]
+    toValue Expense{description, payer, beneficiaries, amount, account} =
+      VList [toValue description, toValue payer, toValue beneficiaries, amount, account]
     fromValue = \case
-        VList [v1, v2, v3, v4] -> Expense <$> fromValue v1 <*> fromValue v2 <*> Just v3 <*> Just v4
+        VList [v0, v1, v2, v3, v4] -> Expense <$> fromValue v0 <*> fromValue v1 <*> fromValue v2 <*> Just v3 <*> Just v4
         _ -> Nothing
 
 data ExpenseApproval = ExpenseApproval

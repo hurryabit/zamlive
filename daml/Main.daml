@@ -69,11 +69,12 @@ template Account
 
     nonconsuming choice SubmitExpense : ContractId Expense
       with
+        description: Text
         payer: Party
         amount: Decimal
       controller payer
       do
-        create $ Expense payer members amount accountKey
+        create $ Expense description payer members amount accountKey
 
     choice SettleExpense : ContractId Account
       with
@@ -96,6 +97,7 @@ template Account
 
 template Expense
   with
+    description: Text
     payer: Party
     beneficiaries: [Party]
     amount: Decimal
@@ -159,9 +161,9 @@ basicAccountWithExpenses = scenario do
   --   NewAccountProposal _ -> error "Everybody has accepted so should have account"
   --   AccountCreation cid -> pure cid
 
-  _ <- submit cerolf do exerciseByKey @Account accountKey (SubmitExpense cerolf 100.0)
+  _ <- submit cerolf do exerciseByKey @Account accountKey (SubmitExpense "candies" cerolf 100.0)
 
-  _ <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense bernhard 70.0)
+  _ <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense "chocolate" bernhard 70.0)
 
   pure account
 
@@ -195,12 +197,12 @@ setup = scenario do
 
   accountKey <- pure ([andreas, bernhard, cerolf], accountName)
 
-  expenseCableTVBill <- submit andreas do exerciseByKey @Account accountKey (SubmitExpense andreas 100.0)
+  expenseCableTVBill <- submit andreas do exerciseByKey @Account accountKey (SubmitExpense "Cable TV" andreas 100.0)
   cerolfSignature <- submit cerolf do exercise expenseCableTVBill $ Sign cerolf
   bernhardSignature <- submit bernhard do exercise expenseCableTVBill $ Sign bernhard
   _ <- submit andreas do exerciseByKey @Account accountKey (SettleExpense andreas expenseCableTVBill [bernhardSignature, cerolfSignature])
 
-  expensePetShampooingFund <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense bernhard 70.0)
+  expensePetShampooingFund <- submit bernhard do exerciseByKey @Account accountKey (SubmitExpense "Pet shampooing" bernhard 70.0)
   cerolfSignature <- submit cerolf do exercise expensePetShampooingFund $ Sign cerolf
   andreasSignature <- submit andreas do exercise expensePetShampooingFund $ Sign andreas
   -- _ <- submit bernhard do exerciseByKey @Account accountKey (SettleExpense bernhard expensePetShampooingFund [andreasSignature, cerolfSignature])
