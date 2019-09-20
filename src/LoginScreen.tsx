@@ -19,11 +19,11 @@ class ExpenseForm extends React.Component<Props, State> {
     };
   }
 
-  handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({name: event.currentTarget.value});
   }
 
-  handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({password: event.currentTarget.value});
   }
 
@@ -44,13 +44,27 @@ class ExpenseForm extends React.Component<Props, State> {
             <div className="form-group">
               <label>
                 User name
-                <input type="text" className="form-control" name="username" placeholder="Enter user name" />
+                <input
+                  type="text"
+                  className="form-control"
+                  name="username"
+                  placeholder="Enter user name"
+                  value={this.state.name}
+                  onChange={this.handleUsernameChange}
+                />
               </label>
             </div>
             <div className="form-group">
               <label>
                 Password
-                <input type="password" className="form-control" name="password" placeholder="Password" />
+                <input
+                  type="password"
+                  className="form-control"
+                  name="password"
+                  placeholder="Password"
+                  value={this.state.password}
+                  onChange={this.handlePasswordChange}
+                />
               </label>
             </div>
             <button type="submit" className="btn btn-primary">Submit</button>
