@@ -65,15 +65,13 @@ class AccountsList extends React.Component<Props, State> {
 
   handleAddExpense = (description: string, amount: number) => {
     const account = this.getAccount();
+    const payer = this.props.user.name;
 
     const body = {
       templateId: account.templateId,
       contractId: account.contractId,
       choice: 'SubmitExpense',
-      argument: {
-        payer: this.props.user.name,
-        amount: amount
-      }
+      argument: { description, payer, amount }
     };
     fetch('command/exercise', {
         body: JSON.stringify(body),
