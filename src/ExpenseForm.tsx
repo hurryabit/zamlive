@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Container, Form, FormControl, FormControlProps, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, FormControl, FormControlProps, Row } from 'react-bootstrap';
 
 type Props = {
   onSubmit: (description: string, amount: number) => void;
@@ -41,26 +41,30 @@ class ExpenseForm extends React.Component<Props, State> {
   render() {
     return (
       <Container>
-        <Row className="justify-content-md-center">
-          <Form onSubmit={this.handleSubmit}>
-            <Form.Group>
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                type='text'
-                value={this.state.description}
-                onChange={this.handleDescriptionChange}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Amount</Form.Label>
-              <Form.Control
-                type='text'
-                value={this.state.amount}
-                onChange={this.handleAmountChange}
-              />
-            </Form.Group>
-            <Button type="submit">Submit</Button>
-          </Form>
+        <Row>
+          <Col></Col>
+          <Col>
+            <Form onSubmit={this.handleSubmit}>
+              <Form.Group>
+                <Form.Label>Description</Form.Label>
+                <Form.Control
+                  type='text'
+                  value={this.state.description}
+                  onChange={this.handleDescriptionChange}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Amount</Form.Label>
+                <Form.Control
+                  type='text'
+                  value={this.state.amount}
+                  onChange={this.handleAmountChange}
+                />
+              </Form.Group>
+              <Button type="submit" className='btn-block'>Submit</Button>
+            </Form>
+          </Col>
+          <Col></Col>
         </Row>
       </Container>
     );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, Card, Container, ListGroup, Row, Table } from 'react-bootstrap';
+import { Accordion, Card, Col, Container, ListGroup, Row, Table } from 'react-bootstrap';
 import Account from './Account';
 import ExpenseForm from './ExpenseForm';
 import Ledger from './Ledger';
@@ -81,16 +81,19 @@ class ListTab extends React.Component<Props, State> {
   renderList() {
     return (
       <Container>
-        <Row className="justify-content-md-center">
-          <h2>{this.state.accounts.length > 0 ? 'All Accounts' : 'No Accounts'}</h2>
+        <Row>
+          <Col>
+            <h2 className='text-center'>{this.state.accounts.length > 0 ? 'All Accounts' : 'No Accounts'}</h2>
+          </Col>
         </Row>
-        <Row className="justify-content-md-center">
-          <ListGroup>
-            {/* <ListGroup.Item>All Accounts</ListGroup.Item> */}
-            {this.state.accounts.map((account, index) =>
-              <ListGroup.Item onClick={() => this.showDetails(index)}>{account.name}</ListGroup.Item>
-            )}
-          </ListGroup>
+        <Row>
+          <Col>
+            <ListGroup className='text-center'>
+              {this.state.accounts.map((account, index) =>
+                <ListGroup.Item onClick={() => this.showDetails(index)}>{account.name}</ListGroup.Item>
+              )}
+            </ListGroup>
+          </Col>
         </Row>
       </Container>
     );
@@ -99,51 +102,85 @@ class ListTab extends React.Component<Props, State> {
   renderDetails() {
     const account = this.getAccount();
     return (
-      <React.Fragment>
-        <h1>Account {account.name}</h1>
-        <Accordion defaultActiveKey="balance">
-          <Card>
-            <Accordion.Toggle as={Card.Header} eventKey="balance">
-              Balances
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey="balance">
-              <Card.Body>
-                <Table>
-                  <thead className='text-center'>
-                    <tr>
-                      <th scope='col'>Member</th>
-                      <th>Balance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {account.balance.map(([member, amount]) =>
-                      <tr>
-                        <td>{member}</td>
-                        <td className='text-right'>{amount}</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </Table>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-          <Card>
-              <Accordion.Toggle as={Card.Header} eventKey="add">
-                Submit Expense
-              </Accordion.Toggle>
-            <Accordion.Collapse eventKey="add">
-              <Card.Body>
-                <ExpenseForm onSubmit={this.handleAddExpense} />
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-          <Card>
-            <Accordion.Toggle as={Card.Header} eventKey='back' onClick={this.showList}>
-              Back
-            </Accordion.Toggle>
-          </Card>
-        </Accordion>
-      </React.Fragment>
+      <Container>
+        <Row>
+          <Col>
+            <h1 className='text-center'>Account {account.name}</h1>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <Accordion defaultActiveKey="balance">
+              <Card>
+                <Accordion.Toggle as={Card.Header} eventKey="balance">
+                  Balances
+                </Accordion.Toggle>
+                <Accordion.Collapse eventKey="balance">
+                  <Card.Body>
+                    <Container>
+                      <Row>
+                        <Col>
+                          <Table>
+                            <thead className='text-center'>
+                              <tr>
+                                <th scope='col'>Member</th>
+                                <th>Balance</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {account.balance.map(([member, amount]) =>
+                                <tr>
+                                  <td>{member}</td>
+                                  <td className='text-right'>{amount}</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </Table>
+                        </Col>
+                      </Row>
+                    </Container>
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+              <Card>
+                <Accordion.Toggle as={Card.Header} eventKey="pending">
+                  Pending Expenses
+                </Accordion.Toggle>
+                <Accordion.Collapse eventKey="pending">
+                  <Card.Body>
+                    <p>To be implemented!</p>
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+              <Card>
+                <Accordion.Toggle as={Card.Header} eventKey="add">
+                  Submit Expense
+                </Accordion.Toggle>
+                <Accordion.Collapse eventKey="add">
+                  <Card.Body>
+                    <ExpenseForm onSubmit={this.handleAddExpense} />
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+              <Card>
+                <Accordion.Toggle as={Card.Header} eventKey="settle">
+                  Settle Debt
+                </Accordion.Toggle>
+                <Accordion.Collapse eventKey="settle">
+                  <Card.Body>
+                    <p>To be implemented!</p>
+                  </Card.Body>
+                </Accordion.Collapse>
+              </Card>
+              <Card>
+                <Accordion.Toggle as={Card.Header} eventKey='back' onClick={this.showList}>
+                  Back
+                </Accordion.Toggle>
+              </Card>
+            </Accordion>
+          </Col>
+        </Row>
+      </Container>
     );
   }
 
