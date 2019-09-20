@@ -62,7 +62,7 @@ class ExpenseForm extends React.Component<Props, State> {
                 onChange={this.handlePasswordChange}
               />
             </Form.Group>
-            <Button type="submit" className="btn btn-primary">Log In</Button>
+            <Button type="submit">Log In</Button>
           </Form>
         </Row>
       </Container>

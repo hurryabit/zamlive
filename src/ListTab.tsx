@@ -1,4 +1,5 @@
 import React from 'react';
+import { Accordion, Card, Container, ListGroup, Row, Table } from 'react-bootstrap';
 import Account from './Account';
 import ExpenseForm from './ExpenseForm';
 import Ledger from './Ledger';
@@ -8,7 +9,7 @@ type Props = {
   user: User;
 }
 
-type Mode = 'List' | 'Details' | 'Add';
+type Mode = 'List' | 'Details';
 
 type State = {
   mode: Mode;
@@ -69,7 +70,7 @@ class ListTab extends React.Component<Props, State> {
     });
   };
 
-  showList() {
+  showList = () => {
     this.setState({mode: 'List', selected: null});
   }
 
@@ -77,43 +78,72 @@ class ListTab extends React.Component<Props, State> {
     this.setState({mode: 'Details', selected: index});
   }
 
-  showAdd() {
-    this.setState({mode: 'Add'});
-  }
-
   renderList() {
     return (
-      <div>
-        <h2>Accounts</h2>
-        <ul>
-          {this.state.accounts.map((account, index) => <li key={index}><button onClick={() => this.showDetails(index)}>{account.name}</button></li>)}
-        </ul>
-      </div>
+      <Container>
+        <Row className="justify-content-md-center">
+          <h2>All Accounts</h2>
+        </Row>
+        <Row className="justify-content-md-center">
+          <ListGroup>
+            {/* <ListGroup.Item>All Accounts</ListGroup.Item> */}
+            {this.state.accounts.map((account, index) =>
+              <ListGroup.Item onClick={() => this.showDetails(index)}>{account.name}</ListGroup.Item>
+            )}
+          </ListGroup>
+        </Row>
+      </Container>
     );
   }
 
   renderDetails() {
     const account = this.getAccount();
     return (
-      <div>
-        <button onClick={() => this.showList()}>Back</button>
-        <h2>Account {account.name}</h2>
-        <ul>
-          {account.balance.map(([member, amount]) => <li key={member}>{member}: {amount}</li>)}
-        </ul>
-        <button onClick={() => this.showAdd()}>Add expense</button>
-      </div>
-    );
-  }
-
-  renderAdd() {
-    const account = this.getAccount();
-    return (
-      <div>
-        <button onClick={() => this.showList()}>Back</button>
-        <h2>Add expense to {account.name}</h2>
-        <ExpenseForm onSubmit={this.handleAddExpense} />
-      </div>
+      <React.Fragment>
+        <h1>Account {account.name}</h1>
+        <Accordion defaultActiveKey="balance">
+          <Card>
+            <Accordion.Toggle as={Card.Header} eventKey="balance">
+              Balances
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey="balance">
+              <Card.Body>
+                <Table>
+                  <thead className='text-center'>
+                    <tr>
+                      <th scope='col'>Member</th>
+                      <th>Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {account.balance.map(([member, amount]) =>
+                      <tr>
+                        <td>{member}</td>
+                        <td className='text-right'>{amount}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+          <Card>
+              <Accordion.Toggle as={Card.Header} eventKey="add">
+                Submit Expense
+              </Accordion.Toggle>
+            <Accordion.Collapse eventKey="add">
+              <Card.Body>
+                <ExpenseForm onSubmit={this.handleAddExpense} />
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+          <Card>
+            <Accordion.Toggle as={Card.Header} eventKey='back' onClick={this.showList}>
+              Back
+            </Accordion.Toggle>
+          </Card>
+        </Accordion>
+      </React.Fragment>
     );
   }
 
@@ -123,8 +153,6 @@ class ListTab extends React.Component<Props, State> {
         return this.renderList();
       case 'Details':
         return this.renderDetails();
-      case 'Add':
-        return this.renderAdd();
     }
   }
 }

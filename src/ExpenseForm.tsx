@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button, Container, Form, FormControl, FormControlProps, Row } from 'react-bootstrap';
 
 type Props = {
   onSubmit: (description: string, amount: number) => void;
@@ -18,12 +19,12 @@ class ExpenseForm extends React.Component<Props, State> {
     };
   }
 
-  handleDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({description: event.currentTarget.value});
+  handleDescriptionChange = (event: React.FormEvent<FormControlProps & FormControl>) => {
+    this.setState({description: event.currentTarget.value || ''});
   }
 
-  handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({amount: event.currentTarget.value});
+  handleAmountChange = (event: React.FormEvent<FormControlProps & FormControl>) => {
+    this.setState({amount: event.currentTarget.value || ''});
   }
 
   handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -39,19 +40,29 @@ class ExpenseForm extends React.Component<Props, State> {
 
   render() {
     return (
-      <form onSubmit={this.handleSubmit}>
-        <label>
-          Description:
-          <input type='text' value={this.state.description} onChange={this.handleDescriptionChange} />
-        </label>
-        <br />
-        <label>
-          Amount:
-          <input type='text' value={this.state.amount} onChange={this.handleAmountChange} />
-        </label>
-        <br />
-        <input type='submit' value='Submit' />
-      </form>
+      <Container>
+        <Row className="justify-content-md-center">
+          <Form onSubmit={this.handleSubmit}>
+            <Form.Group>
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                type='text'
+                value={this.state.description}
+                onChange={this.handleDescriptionChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Amount</Form.Label>
+              <Form.Control
+                type='text'
+                value={this.state.amount}
+                onChange={this.handleAmountChange}
+              />
+            </Form.Group>
+            <Button type="submit">Submit</Button>
+          </Form>
+        </Row>
+      </Container>
     );
   }
 }
